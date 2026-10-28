@@ -1,6 +1,7 @@
 package ar.edu.utn.frsfco.finanzas
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -22,6 +23,19 @@ class GastosRepositorio {
 
     private val base = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+
+    /**
+     * Indica si la última lista recibida ya viene confirmada por el servidor. Mientras no lo
+     * está, la lista puede estar vacía o incompleta (instalación nueva, sin copia local), y
+     * crear los gastos fijos con ella duplicaría los que ya existen.
+     */
+    @Volatile
+    var confirmadoPorServidor = false
+        private set
+
+    fun olvidarConfirmacion() {
+        confirmadoPorServidor = false
+    }
 
     private fun coleccion() = base
         .collection("usuarios")
@@ -46,33 +60,155 @@ class GastosRepositorio {
         coleccion().document(gasto.id).set(aMapa(gasto))
     }
 
+    /** Consulta puntual de todos los gastos bajo demanda para exportación, sin escuchas activas. */
+    fun obtenerTodos(
+        alCompletar: (List<Gasto>) -> Unit,
+        alFallar: (Exception) -> Unit = {}
+    ) {
+        coleccion()
+            .orderBy("fecha", Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { documentos ->
+                alCompletar(documentos.map { doc -> mapear(doc) })
+            }
+            .addOnFailureListener { error ->
+                alFallar(error)
+            }
+    }
+
+    /** Borra un lote de gastos por identificador mediante batch write, para depurar historial exportado. */
+    fun borrarLote(ids: List<String>, alCompletar: () -> Unit = {}) {
+        if (ids.isEmpty()) {
+            alCompletar()
+            return
+        }
+        val lotes = ids.chunked(500)
+        fun procesar(indice: Int) {
+            if (indice >= lotes.size) {
+                alCompletar()
+                return
+            }
+            val lote = base.batch()
+            lotes[indice].forEach { id ->
+                lote.delete(coleccion().document(id))
+            }
+            lote.commit()
+                .addOnSuccessListener { procesar(indice + 1) }
+                .addOnFailureListener { alCompletar() }
+        }
+        procesar(0)
+    }
+
     /**
-     * Escucha los gastos y avisa cada vez que cambian.
+     * Escucha los gastos y avisa cada vez que cambian (consulta histórica sin filtro).
      *
      * Firestore mantiene una copia local, así que la lista aparece al instante y se
      * actualiza sola cuando termina de sincronizar. Devuelve el registro para poder
      * cortar la escucha cuando la pantalla deja de verse.
      */
-    fun escuchar(alCambiar: (List<Gasto>) -> Unit): ListenerRegistration =
+    fun escuchar(alFallar: () -> Unit = {}, alCambiar: (List<Gasto>) -> Unit): ListenerRegistration =
         coleccion()
             .orderBy("fecha", Query.Direction.DESCENDING)
             .addSnapshotListener { documentos, error ->
-                if (error != null || documentos == null) return@addSnapshotListener
-                alCambiar(documentos.map { doc ->
-                    Gasto(
-                        id = doc.id,
-                        monto = doc.getDouble("monto") ?: 0.0,
-                        categoriaId = doc.getString("categoria").orEmpty(),
-                        detalle = doc.getString("detalle").orEmpty(),
-                        fecha = doc.getDate("fecha") ?: Date(),
-                        // Los movimientos cargados antes guardaban la clave en "medioPago";
-                        // los medios sembrados usan esas mismas claves como id.
-                        medioId = (doc.getString("medioId")
-                            ?: doc.getString("medioPago")).orEmpty(),
-                        fijoId = doc.getString("fijoId").orEmpty()
-                    )
-                })
+                if (error != null || documentos == null) {
+                    if (error != null) alFallar()
+                    return@addSnapshotListener
+                }
+                confirmadoPorServidor = !documentos.metadata.isFromCache
+                alCambiar(documentos.map { doc -> mapear(doc) })
             }
+
+    /** Escucha los gastos del intervalo [desde, hasta), sin traer períodos ajenos. */
+    fun escucharEnRango(
+        desde: Date,
+        hasta: Date,
+        alFallar: () -> Unit = {},
+        alCambiar: (List<Gasto>) -> Unit
+    ): ListenerRegistration =
+        coleccion()
+            .whereGreaterThanOrEqualTo("fecha", desde)
+            .whereLessThan("fecha", hasta)
+            .orderBy("fecha", Query.Direction.DESCENDING)
+            .addSnapshotListener { documentos, error ->
+                if (error != null || documentos == null) {
+                    if (error != null) alFallar()
+                    return@addSnapshotListener
+                }
+                confirmadoPorServidor = !documentos.metadata.isFromCache
+                alCambiar(documentos.map { doc -> mapear(doc) })
+            }
+
+    /** Escucha en tiempo real una categoría dentro de [desde, hasta). */
+    fun escucharPorCategoriaEnRango(
+        categoriaId: String,
+        desde: Date,
+        hasta: Date,
+        alFallar: () -> Unit = {},
+        alCambiar: (List<Gasto>) -> Unit
+    ): ListenerRegistration =
+        coleccion()
+            .whereEqualTo("categoria", categoriaId)
+            .whereGreaterThanOrEqualTo("fecha", desde)
+            .whereLessThan("fecha", hasta)
+            .orderBy("fecha", Query.Direction.DESCENDING)
+            .addSnapshotListener { documentos, error ->
+                if (error != null || documentos == null) {
+                    if (error != null) alFallar()
+                    return@addSnapshotListener
+                }
+                alCambiar(documentos.map { doc -> mapear(doc) })
+            }
+
+    /**
+     * Consulta una página acotada de movimientos históricos ordenados por fecha descendente,
+     * admitiendo opcionalmente cotas de fecha (desde/hasta) y filtro de categoría.
+     *
+     * Si incluye categoría, aprovecha el índice compuesto (categoria ASC, fecha DESC).
+     * Si incluye rango temporal, acota las lecturas exclusivamente al período solicitado
+     * en el servidor de Firestore sin descargar movimientos ajenos.
+     */
+    fun consultarPaginado(
+        desde: Date? = null,
+        hasta: Date? = null,
+        categoriaId: String? = null,
+        limite: Long = 30,
+        ultimoDoc: DocumentSnapshot? = null,
+        alCompletar: (List<Gasto>, DocumentSnapshot?) -> Unit,
+        alFallar: (Exception) -> Unit = {}
+    ) {
+        var consulta: Query = coleccion()
+        if (categoriaId != null) {
+            consulta = consulta.whereEqualTo("categoria", categoriaId)
+        }
+        if (desde != null) {
+            consulta = consulta.whereGreaterThanOrEqualTo("fecha", desde)
+        }
+        if (hasta != null) {
+            consulta = consulta.whereLessThan("fecha", hasta)
+        }
+        consulta = consulta.orderBy("fecha", Query.Direction.DESCENDING).limit(limite)
+        if (ultimoDoc != null) {
+            consulta = consulta.startAfter(ultimoDoc)
+        }
+        consulta.get().addOnSuccessListener { documentos ->
+            val lista = documentos.map { doc -> mapear(doc) }
+            val nuevoUltimo = documentos.documents.lastOrNull()
+            alCompletar(lista, nuevoUltimo)
+        }.addOnFailureListener { error ->
+            alFallar(error)
+        }
+    }
+
+    private fun mapear(doc: DocumentSnapshot): Gasto =
+        Gasto(
+            id = doc.id,
+            monto = doc.getDouble("monto") ?: 0.0,
+            categoriaId = doc.getString("categoria").orEmpty(),
+            detalle = doc.getString("detalle").orEmpty(),
+            fecha = doc.getDate("fecha") ?: Date(),
+            medioId = (doc.getString("medioId") ?: doc.getString("medioPago")).orEmpty(),
+            fijoId = doc.getString("fijoId").orEmpty()
+        )
 
     private fun aMapa(g: Gasto) = hashMapOf(
         "monto" to g.monto,

@@ -168,8 +168,9 @@ class GastoSheet : HojaBase() {
 
     private fun guardar() {
         val monto = Plata.leer(binding.etMonto.text.toString())
-        if (monto == null || monto <= 0) {
-            binding.etMonto.error = getString(R.string.monto_invalido)
+        val aviso = CampoMonto.error(monto)
+        if (monto == null || aviso != null) {
+            binding.etMonto.error = getString(aviso ?: R.string.monto_invalido)
             return
         }
         val categoria = categorias.firstOrNull { it.id == elegidaId }
@@ -215,6 +216,11 @@ class GastoSheet : HojaBase() {
 
     private fun borrar() {
         val existente = gasto ?: return
+        // Si lo creó un recurrente, se anota antes de borrar para que no se genere de nuevo solo.
+        if (existente.fijoId.isNotBlank() && FijosRepositorio.esDeEsteMes(existente.fecha, java.util.Calendar.getInstance())) {
+            FijosRepositorio.omitirAhora(existente.fijoId)
+            FijosRepositorio().omitirEsteMes(existente.fijoId)
+        }
         repositorio.borrar(existente.id)
         ocultarTeclado()
         terminar(PEDIDO, bundleOf(MENSAJE to R.string.gasto_borrado, BORRADO to existente))

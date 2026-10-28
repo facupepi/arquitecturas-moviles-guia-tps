@@ -11,10 +11,12 @@ android {
 
     defaultConfig {
         applicationId = "ar.edu.utn.frsfco.finanzas"
+        applicationIdSuffix = ".v3"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -26,12 +28,19 @@ android {
         jvmTarget = "17"
     }
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     buildFeatures {
         viewBinding = true
     }
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.2")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -46,6 +55,7 @@ dependencies {
     // Analytics no se invoca desde el código: alcanza con incluirlo para que
     // registre aperturas y sesiones, que es la parte de "medir" del trabajo.
     implementation(libs.firebase.analytics)
+    implementation(libs.firebase.config)
 
     // Entrada con Google
     implementation(libs.androidx.credentials)

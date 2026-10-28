@@ -10,29 +10,32 @@ service cloud.firestore {
     }
 
     function montoValido() {
-      return request.resource.data.monto is number && request.resource.data.monto > 0;
+      return request.resource.data.monto is number
+        && request.resource.data.monto > 0
+        && request.resource.data.monto <= 1000000000;
     }
 
     match /usuarios/{uid}/gastos/{gasto} {
       allow read, delete: if esDueno(uid);
 
-      // Al crear o modificar se valida la forma del dato, para que la base no
-      // termine con montos negativos ni con textos de largo arbitrario.
-      // La categoría ya no se compara contra una lista fija: ahora las define
-      // el usuario, así que acá sólo se exige que sea una referencia válida.
       allow create, update: if esDueno(uid)
         && montoValido()
+        && request.resource.data.keys().hasOnly([
+          'monto', 'categoria', 'detalle', 'fecha', 'medioId', 'fijoId'
+        ])
+        && request.resource.data.keys().hasAll(['monto', 'categoria', 'detalle', 'fecha'])
         && request.resource.data.categoria is string
+        && request.resource.data.categoria.size() > 0
         && request.resource.data.categoria.size() <= 40
         && request.resource.data.detalle is string
         && request.resource.data.detalle.size() <= 120
-        // El medio de pago tampoco se compara contra una lista fija: desde la
-        // segunda versión lo define el usuario, como las categorías. El campo es
-        // opcional porque la primera versión, que se entrega para comparar, todavía
-        // no lo escribía y sus gastos serían rechazados.
+        && request.resource.data.fecha is timestamp
         && (!('medioId' in request.resource.data)
             || (request.resource.data.medioId is string
-                && request.resource.data.medioId.size() <= 40));
+                && request.resource.data.medioId.size() <= 40))
+        && (!('fijoId' in request.resource.data)
+            || (request.resource.data.fijoId is string
+                && request.resource.data.fijoId.size() <= 40));
     }
 
     match /usuarios/{uid}/ingresos/{ingreso} {
@@ -40,14 +43,19 @@ service cloud.firestore {
 
       allow create, update: if esDueno(uid)
         && montoValido()
+        && request.resource.data.keys().hasOnly(['monto', 'detalle', 'fecha'])
+        && request.resource.data.keys().hasAll(['monto', 'detalle', 'fecha'])
         && request.resource.data.detalle is string
-        && request.resource.data.detalle.size() <= 120;
+        && request.resource.data.detalle.size() <= 120
+        && request.resource.data.fecha is timestamp;
     }
 
     match /usuarios/{uid}/categorias/{categoria} {
       allow read, delete: if esDueno(uid);
 
       allow create, update: if esDueno(uid)
+        && request.resource.data.keys().hasOnly(['nombre', 'color', 'icono', 'orden'])
+        && request.resource.data.keys().hasAll(['nombre', 'color', 'icono', 'orden'])
         && request.resource.data.nombre is string
         && request.resource.data.nombre.size() > 0
         && request.resource.data.nombre.size() <= 20
@@ -62,6 +70,8 @@ service cloud.firestore {
       allow read, delete: if esDueno(uid);
 
       allow create, update: if esDueno(uid)
+        && request.resource.data.keys().hasOnly(['nombre', 'color', 'icono', 'orden'])
+        && request.resource.data.keys().hasAll(['nombre', 'color', 'icono', 'orden'])
         && request.resource.data.nombre is string
         && request.resource.data.nombre.size() > 0
         && request.resource.data.nombre.size() <= 24
@@ -77,6 +87,12 @@ service cloud.firestore {
 
       allow create, update: if esDueno(uid)
         && montoValido()
+        && request.resource.data.keys().hasOnly([
+          'nombre', 'monto', 'categoria', 'medioId', 'diaDelMes', 'omitidoMes'
+        ])
+        && request.resource.data.keys().hasAll([
+          'nombre', 'monto', 'categoria', 'medioId', 'diaDelMes'
+        ])
         && request.resource.data.nombre is string
         && request.resource.data.nombre.size() > 0
         && request.resource.data.nombre.size() <= 40
@@ -85,7 +101,10 @@ service cloud.firestore {
         && request.resource.data.medioId.size() <= 40
         && request.resource.data.diaDelMes is int
         && request.resource.data.diaDelMes >= 1
-        && request.resource.data.diaDelMes <= 31;
+        && request.resource.data.diaDelMes <= 31
+        && (!('omitidoMes' in request.resource.data)
+            || (request.resource.data.omitidoMes is string
+                && request.resource.data.omitidoMes.matches('^[0-9]{4}-(0[1-9]|1[0-2])$')));
     }
 
     // Todo lo que no esté declarado arriba queda cerrado.

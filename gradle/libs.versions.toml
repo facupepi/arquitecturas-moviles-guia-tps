@@ -25,6 +25,7 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-config = { group = "com.google.firebase", name = "firebase-config" }
 
 # Entrada con Google, por el administrador de credenciales de Android.
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }

@@ -102,6 +102,7 @@
                 android:fontFamily="@font/poppins_regular"
                 android:imeOptions="actionDone"
                 android:inputType="textCapSentences"
+                android:maxLength="120"
                 android:maxLines="1" />
 
         </com.google.android.material.textfield.TextInputLayout>

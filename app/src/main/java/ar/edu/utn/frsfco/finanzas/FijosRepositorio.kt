@@ -36,6 +36,27 @@ class FijosRepositorio {
         coleccion().document(id).delete()
     }
 
+    /** El usuario borró el gasto de este mes: el recurrente sigue, pero este mes no se vuelve a crear solo. */
+    fun omitirEsteMes(id: String) {
+        val ref = coleccion().document(id)
+        ref.get().addOnSuccessListener { doc ->
+            // Si el recurrente ya no existe no se lo vuelve a crear. Se escribe el documento entero porque
+            // las reglas piden todos los campos y los recurrentes viejos guardaban el medio como medioPago.
+            if (!doc.exists()) return@addOnSuccessListener
+            val medio = (doc.getString("medioId") ?: doc.getString("medioPago")).orEmpty()
+            ref.set(
+                hashMapOf(
+                    "nombre" to doc.getString("nombre").orEmpty(),
+                    "monto" to (doc.getDouble("monto") ?: 0.0),
+                    "categoria" to doc.getString("categoria").orEmpty(),
+                    "medioId" to medio,
+                    "diaDelMes" to (doc.getLong("diaDelMes") ?: 1L).toInt(),
+                    "omitidoMes" to claveDeMes(Calendar.getInstance())
+                )
+            )
+        }
+    }
+
     fun escuchar(alCambiar: (List<GastoFijo>) -> Unit): ListenerRegistration =
         coleccion().addSnapshotListener { documentos, error ->
             if (error != null || documentos == null) return@addSnapshotListener
@@ -49,7 +70,8 @@ class FijosRepositorio {
                         // los medios sembrados usan esas mismas claves como id.
                         medioId = (doc.getString("medioId")
                             ?: doc.getString("medioPago")).orEmpty(),
-                    diaDelMes = (doc.getLong("diaDelMes") ?: 1L).toInt()
+                    diaDelMes = (doc.getLong("diaDelMes") ?: 1L).toInt(),
+                    omitidoMes = doc.getString("omitidoMes").orEmpty()
                 )
             }.sortedBy { it.diaDelMes })
         }
@@ -76,6 +98,7 @@ class FijosRepositorio {
 
             fijos.forEach { fijo ->
                 if (fijo.id in yaCreados) return@forEach
+                if (fijo.omitidoMes == claveDeMes(hoy) || "${fijo.id}|${claveDeMes(hoy)}" in omitidosEnSesion) return@forEach
                 if (fijo.diaDelMes > hoy.get(Calendar.DAY_OF_MONTH)) return@forEach
 
                 repositorio.agregar(
@@ -100,7 +123,19 @@ class FijosRepositorio {
             set(Calendar.MILLISECOND, 0)
         }.time
 
-        private fun esDeEsteMes(fecha: Date, hoy: Calendar): Boolean {
+        /**
+         * Gastos de recurrentes que el usuario acaba de borrar. Se anota al instante, antes de que
+         * Firestore avise del borrado, para que el recurrente no los vuelva a crear en esa carrera.
+         */
+        private val omitidosEnSesion = java.util.Collections.synchronizedSet(mutableSetOf<String>())
+
+        fun omitirAhora(fijoId: String) {
+            omitidosEnSesion += "$fijoId|${claveDeMes(Calendar.getInstance())}"
+        }
+
+        private fun claveDeMes(c: Calendar) = "%04d-%02d".format(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1)
+
+        fun esDeEsteMes(fecha: Date, hoy: Calendar): Boolean {
             val otra = Calendar.getInstance().apply { time = fecha }
             return otra.get(Calendar.YEAR) == hoy.get(Calendar.YEAR) &&
                 otra.get(Calendar.MONTH) == hoy.get(Calendar.MONTH)
@@ -113,5 +148,5 @@ class FijosRepositorio {
         "categoria" to f.categoriaId,
         "medioId" to f.medioId,
         "diaDelMes" to f.diaDelMes
-    )
+    ).apply { if (f.omitidoMes.isNotBlank()) put("omitidoMes", f.omitidoMes) }
 }

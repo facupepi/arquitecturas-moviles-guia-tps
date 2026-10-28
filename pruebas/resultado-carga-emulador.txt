@@ -1,0 +1,51 @@
+i  emulators: Starting emulators: firestore
+i  emulators: Detected demo project ID "demo-tp3", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: node pruebas/carga-emulador.mjs
+=== BANCO DE PRUEBAS DE CARGA Y ESCALABILIDAD (FIRESTORE) ===
+
+--- 1. Verificacion de Reglas Declarativas de Seguridad ---
+OK  escritura permitida al titular autenticado
+OK  rechazo 403 al escribir en cuenta ajena
+OK  rechazo 403 a peticiones anonimas sin sesion
+OK  rechazo 403 para importes negativos
+OK  rechazo 403 para textos mayores a 120 caracteres
+OK  rechazo 403 si falta la fecha obligatoria
+OK  rechazo 403 para fechas que no son timestamp
+OK  rechazo 403 para campos no declarados
+OK  escritura autorizada en coleccion de medios de pago
+OK  rechazo 403 para campos extra en medios
+OK  rechazo 403 para campos extra en categorias
+OK  rechazo 403 para campos extra en gastos fijos
+OK  rechazo 403 en colecciones no declaradas (politica de cierre)
+
+--- 2. Carga Concurrente de Escrituras (50 Usuarios x 40 Operaciones) ---
+Metricas reales registradas:
+  operaciones procesadas: 2000 (50 usuarios x 40 gastos)
+  concurrencia controlada: hasta 100 solicitudes simultaneas en vuelo
+  tiempo total transcurrido: 5543 ms (5.54 s)
+  tasa efectiva de escritura: 360.8 ops/s
+  latencia (min / prom / med / p95 / max): 22 ms / 275.8 ms / 262 ms / 442 ms / 658 ms
+OK  procesamiento de 2000 escrituras - 2000/2000 aceptadas (0 errores)
+OK  persistencia integra en los 50 usuarios - 50/50 usuarios con exactamente 40 gastos persistidos
+
+--- 3. Medicion de Costo de Lecturas sobre Historial de 3.000 Gastos ---
+Documentos devueltos (= lecturas facturadas por apertura) y reducción frente a la consulta completa:
+  consulta completa sin filtro : 3000 lecturas
+  consulta del mes calendario  : 100 lecturas    -> 96,7 % menos
+  consulta paginada (30 items) : 30 lecturas     -> 99 % menos
+  consulta categoria + fecha   : 30 lecturas     -> 99 % menos (forma compatible con el indice declarado)
+OK  la consulta completa devuelve el historial completo
+OK  la consulta por mes calendario devuelve exactamente su intervalo - 100/100 documentos del mes
+OK  la consulta paginada devuelve exactamente 30 elementos
+OK  la consulta por categoria y fecha devuelve el limite esperado - 30/30 documentos
+
+RESULTADO FINAL: Todas las verificaciones pasaron exitosamente (0 errores).
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGKILL
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator

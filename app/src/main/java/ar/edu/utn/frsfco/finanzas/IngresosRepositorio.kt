@@ -36,11 +36,63 @@ class IngresosRepositorio {
         coleccion().document(id).delete()
     }
 
-    fun escuchar(alCambiar: (List<Ingreso>) -> Unit): ListenerRegistration =
+    /** Escucha los ingresos del intervalo [desde, hasta), sin traer períodos ajenos. */
+    fun escucharEnRango(
+        desde: Date,
+        hasta: Date,
+        alFallar: () -> Unit = {},
+        alCambiar: (List<Ingreso>) -> Unit
+    ): ListenerRegistration =
+        coleccion()
+            .whereGreaterThanOrEqualTo("fecha", desde)
+            .whereLessThan("fecha", hasta)
+            .orderBy("fecha", Query.Direction.DESCENDING)
+            .addSnapshotListener { documentos, error ->
+                if (error != null || documentos == null) {
+                    if (error != null) alFallar()
+                    return@addSnapshotListener
+                }
+                alCambiar(documentos.map { doc ->
+                    Ingreso(
+                        id = doc.id,
+                        monto = doc.getDouble("monto") ?: 0.0,
+                        detalle = doc.getString("detalle").orEmpty(),
+                        fecha = doc.getDate("fecha") ?: Date()
+                    )
+                })
+            }
+
+    fun escucharUltimos(
+        limite: Long = 12,
+        alFallar: () -> Unit = {},
+        alCambiar: (List<Ingreso>) -> Unit
+    ): ListenerRegistration =
+        coleccion()
+            .orderBy("fecha", Query.Direction.DESCENDING)
+            .limit(limite)
+            .addSnapshotListener { documentos, error ->
+                if (error != null || documentos == null) {
+                    if (error != null) alFallar()
+                    return@addSnapshotListener
+                }
+                alCambiar(documentos.map { doc ->
+                    Ingreso(
+                        id = doc.id,
+                        monto = doc.getDouble("monto") ?: 0.0,
+                        detalle = doc.getString("detalle").orEmpty(),
+                        fecha = doc.getDate("fecha") ?: Date()
+                    )
+                })
+            }
+
+    fun escuchar(alFallar: () -> Unit = {}, alCambiar: (List<Ingreso>) -> Unit): ListenerRegistration =
         coleccion()
             .orderBy("fecha", Query.Direction.DESCENDING)
             .addSnapshotListener { documentos, error ->
-                if (error != null || documentos == null) return@addSnapshotListener
+                if (error != null || documentos == null) {
+                    if (error != null) alFallar()
+                    return@addSnapshotListener
+                }
                 alCambiar(documentos.map { doc ->
                     Ingreso(
                         id = doc.id,

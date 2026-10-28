@@ -1,0 +1,3 @@
+gastos escritos: 60/60
+consulta categoria + fecha (indice compuesto): estado 200 | 30 documentos | 132 ms
+documentos eliminados: 60/60 | cuenta de prueba eliminada: true

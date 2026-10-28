@@ -72,6 +72,7 @@
     <string name="medio_borrado">Medio de pago eliminado</string>
     <string name="sin_medios_aviso">Antes de registrar un gasto tenés que definir al menos un medio de pago.</string>
     <string name="monto_invalido">Ingresá un monto válido</string>
+    <string name="monto_maximo">El monto no puede superar $ 1.000.000.000</string>
     <string name="error_guardar">No se pudo guardar. Verificá la conexión.</string>
     <string name="gasto_guardado">Gasto registrado</string>
 
@@ -115,9 +116,11 @@
         <item quantity="one">Ver el movimiento</item>
         <item quantity="other">Ver los %d movimientos</item>
     </plurals>
+    <string name="cargar_mas">Cargar más movimientos</string>
+    <string name="error_cargar_historial">No se pudieron cargar más movimientos.</string>
     <plurals name="historial_resumen">
-        <item quantity="one">%1$d movimiento por un total de %2$s</item>
-        <item quantity="other">%1$d movimientos por un total de %2$s</item>
+        <item quantity="one">%1$d movimiento cargado por un total de %2$s</item>
+        <item quantity="other">%1$d movimientos cargados por un total de %2$s</item>
     </plurals>
 
     <!-- Ajustes -->
@@ -151,6 +154,10 @@
     <string name="exportar">Exportar movimientos</string>
     <string name="exportar_asunto">Mis gastos</string>
     <string name="sin_gastos_exportar">No hay movimientos para exportar</string>
+    <string name="depurar_titulo">Depurar historial</string>
+    <string name="depurar_aviso">¿Desea eliminar los movimientos exportados para liberar espacio en la nube?</string>
+    <string name="btn_depurar">Depurar</string>
+    <string name="movimientos_depurados">Movimientos eliminados correctamente</string>
     <string name="btn_salir">Cerrar sesión</string>
     <string name="salir_aviso">Los datos quedan guardados y se restauran al volver a ingresar.</string>
     <string name="salir_invitado_aviso">Estás usando la aplicación sin cuenta. Si cerrás la sesión, los datos registrados se pierden.</string>
@@ -159,4 +166,9 @@
     <string name="invitado_bajada">Ingresá con Google para conservar los datos registrados y acceder a ellos desde cualquier dispositivo.</string>
     <string name="cuenta_vinculada">Los datos quedaron asociados a tu cuenta</string>
 
+    <string name="error_movimientos">No se pudieron cargar los movimientos. Revisá la conexión e intentá de nuevo.</string>
+    <string name="borrar_ingreso_aviso">El ingreso se va a quitar del saldo. Esta acción no se puede deshacer.</string>
+    <string name="borrar_fijo_aviso">Se deja de generar este gasto todos los meses. Los gastos ya registrados no se tocan.</string>
+    <string name="borrar_medio_aviso">Los gastos que lo usan quedan sin medio de pago.</string>
+    <string name="cargando_resumen">Cargando el resumen…</string>
 </resources>

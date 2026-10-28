@@ -40,6 +40,16 @@ class CampoMonto(private val campo: EditText) : TextWatcher {
     override fun onTextChanged(s: CharSequence?, i: Int, b: Int, c: Int) = Unit
 
     companion object {
+        /** Mismo tope que exigen las reglas de Firestore: más arriba la nube rechaza el movimiento. */
+        const val MAXIMO = 1_000_000_000.0
+
+        /** Devuelve el aviso que corresponde al importe, o null si se puede guardar. */
+        fun error(monto: Double?): Int? = when {
+            monto == null || monto <= 0 -> R.string.monto_invalido
+            monto > MAXIMO -> R.string.monto_maximo
+            else -> null
+        }
+
         /** Deja el campo listo para escribir plata y devuelve el importe cuando se pide. */
         fun preparar(campo: EditText) {
             campo.addTextChangedListener(CampoMonto(campo))

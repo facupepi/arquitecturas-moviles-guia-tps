@@ -1,0 +1,11 @@
+OK    crear gasto con la forma de la V2 - estado 200
+OK    corregir ese gasto (update completo)
+OK    crear gasto generado por un fijo (fijoId con valor)
+OK    crear ingreso
+OK    crear gasto fijo - estado 200
+OK    editar gasto fijo
+OK    crear categoria
+OK    crear medio de pago
+OK    leer la lista completa de gastos ordenada por fecha
+OK    leer ingresos
+La V2 es compatible con las reglas del proyecto.

@@ -17,6 +17,7 @@ class Aplicacion : Application() {
     override fun onCreate() {
         super.onCreate()
         Idioma.fijar()
+        ParametrosRemotos.iniciar()
     }
 
     override fun onConfigurationChanged(nueva: Configuration) {

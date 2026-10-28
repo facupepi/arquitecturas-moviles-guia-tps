@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +13,7 @@ import ar.edu.utn.frsfco.finanzas.databinding.ActivityAjustesBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaFijoBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaIngresoBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaMedioBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
@@ -40,12 +42,12 @@ class AjustesActivity : PantallaBase() {
 
     private var fijos = listOf<GastoFijo>()
     private var categorias = listOf<Categoria>()
-    private var gastos = listOf<Gasto>()
     private var medios = listOf<Medio>()
     private val ingresos = mutableListOf<Ingreso>()
 
     private companion object {
         const val CONFIRMAR_SALIDA = "confirmar_salida"
+        const val CONFIRMAR_DEPURACION = "confirmar_depuracion"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +86,12 @@ class AjustesActivity : PantallaBase() {
         supportFragmentManager.setFragmentResultListener(CONFIRMAR_SALIDA, this) { _, _ ->
             cerrarSesion()
         }
+        supportFragmentManager.setFragmentResultListener(CONFIRMAR_DEPURACION, this) { _, datos ->
+            val ids = datos.getStringArrayList("ids") ?: return@setFragmentResultListener
+            gastosRepo.borrarLote(ids) {
+                avisar(R.string.movimientos_depurados)
+            }
+        }
     }
 
     override fun onStart() {
@@ -96,12 +104,11 @@ class AjustesActivity : PantallaBase() {
             categorias = recibidas
             dibujarFijos()
         }
-        escuchas += ingresosRepo.escuchar { recibidos ->
+        escuchas += ingresosRepo.escucharUltimos { recibidos ->
             ingresos.clear()
             ingresos.addAll(recibidos)
             dibujarIngresos()
         }
-        escuchas += gastosRepo.escuchar { recibidos -> gastos = recibidos }
         escuchas += mediosRepo.escuchar { recibidos ->
             medios = recibidos
             dibujarMedios()
@@ -129,11 +136,25 @@ class AjustesActivity : PantallaBase() {
             fila.tvMonto.text = Plata.formatear(ingreso.monto)
             fila.root.setOnClickListener { abrirHojaIngreso(ingreso) }
             fila.btnBorrar.setOnClickListener {
-                ingresosRepo.borrar(ingreso.id)
-                avisar(R.string.ingreso_borrado)
+                confirmarBorrado(ingreso.detalle.ifBlank { getString(R.string.ingreso) }, R.string.borrar_ingreso_aviso) {
+                    ingresosRepo.borrar(ingreso.id)
+                    avisar(R.string.ingreso_borrado)
+                }
             }
             binding.listaIngresos.addView(fila.root)
         }
+    }
+
+    /** Igual que en Categorías: borrar es destructivo, así que se pide confirmación y el botón va en rojo. */
+    private fun confirmarBorrado(titulo: String, aviso: Int, accion: () -> Unit) {
+        val dialogo = MaterialAlertDialogBuilder(this)
+            .setTitle(titulo)
+            .setMessage(aviso)
+            .setNegativeButton(R.string.cancelar, null)
+            .setPositiveButton(R.string.borrar) { _, _ -> accion() }
+            .show()
+        dialogo.getButton(AlertDialog.BUTTON_POSITIVE)
+            .setTextColor(ContextCompat.getColor(this, R.color.rojo))
     }
 
     private fun abrirHojaIngreso(ingreso: Ingreso?) {
@@ -156,8 +177,10 @@ class AjustesActivity : PantallaBase() {
             fila.tvNombre.text = medio.nombre
             fila.root.setOnClickListener { abrirHojaMedio(medio) }
             fila.btnBorrar.setOnClickListener {
-                mediosRepo.borrar(medio.id)
-                avisar(R.string.medio_borrado)
+                confirmarBorrado(medio.nombre, R.string.borrar_medio_aviso) {
+                    mediosRepo.borrar(medio.id)
+                    avisar(R.string.medio_borrado)
+                }
             }
             binding.listaMedios.addView(fila.root)
         }
@@ -186,8 +209,10 @@ class AjustesActivity : PantallaBase() {
             fila.tvMonto.text = Plata.formatear(fijo.monto)
             fila.root.setOnClickListener { abrirHojaFijo(fijo) }
             fila.btnBorrar.setOnClickListener {
-                fijosRepo.borrar(fijo.id)
-                avisar(R.string.fijo_borrado)
+                confirmarBorrado(fijo.nombre, R.string.borrar_fijo_aviso) {
+                    fijosRepo.borrar(fijo.id)
+                    avisar(R.string.fijo_borrado)
+                }
             }
             binding.listaFijos.addView(fila.root)
         }
@@ -204,23 +229,34 @@ class AjustesActivity : PantallaBase() {
     // -------------------------------------------------------------- exportar
 
     /**
-     * Arma una planilla con todos los gastos y la manda a donde el usuario quiera.
-     *
-     * Se comparte como texto en lugar de escribir un archivo, que obligaría a declarar
-     * un proveedor de archivos y permisos. Llega igual a correo, mensajes o notas.
+     * Consulta bajo demanda todos los gastos, arma una planilla y la manda a donde el usuario quiera.
+     * Al no escuchar la colección en tiempo real desde el inicio de la pantalla, evita lecturas masivas.
      */
     private fun exportar() {
-        if (gastos.isEmpty()) {
-            avisar(R.string.sin_gastos_exportar)
-            return
-        }
+        binding.btnExportar.isEnabled = false
+        gastosRepo.obtenerTodos(
+            alCompletar = { lista ->
+                binding.btnExportar.isEnabled = true
+                if (lista.isEmpty()) {
+                    avisar(R.string.sin_gastos_exportar)
+                    return@obtenerTodos
+                }
+                compartirPlanilla(lista)
+            },
+            alFallar = {
+                binding.btnExportar.isEnabled = true
+                avisar(R.string.sin_gastos_exportar)
+            }
+        )
+    }
 
+    private fun compartirPlanilla(lista: List<Gasto>) {
         val porId = categorias.associateBy { it.id }
         val mediosPorId = medios.associateBy { it.id }
         val formato = SimpleDateFormat("yyyy-MM-dd", Idioma.español)
         val planilla = buildString {
             appendLine("fecha;monto;categoria;medio;detalle")
-            gastos.forEach { gasto ->
+            lista.forEach { gasto ->
                 val categoria = porId[gasto.categoriaId]?.nombre ?: ""
                 val medio = mediosPorId[gasto.medioId]?.nombre.orEmpty()
                 // El punto y coma separa columnas, así que no puede quedar en el texto.
@@ -238,6 +274,16 @@ class AjustesActivity : PantallaBase() {
             putExtra(Intent.EXTRA_TEXT, planilla)
         }
         startActivity(Intent.createChooser(envio, getString(R.string.exportar)))
+
+        if (lista.isNotEmpty()) {
+            Confirmacion.pedir(
+                pedido = CONFIRMAR_DEPURACION,
+                titulo = getString(R.string.depurar_titulo),
+                aviso = R.string.depurar_aviso,
+                accion = R.string.btn_depurar,
+                datos = androidx.core.os.bundleOf("ids" to ArrayList(lista.map { it.id }))
+            ).show(supportFragmentManager, CONFIRMAR_DEPURACION)
+        }
     }
 
     /**

@@ -1,0 +1,11 @@
+{
+  "parameters": {
+    "tamano_lote_historial": {
+      "defaultValue": {
+        "value": "30"
+      },
+      "description": "Cantidad de movimientos que lee cada lote de la pantalla Historial. Reducirlo baja el consumo de lecturas diarias.",
+      "valueType": "NUMBER"
+    }
+  }
+}

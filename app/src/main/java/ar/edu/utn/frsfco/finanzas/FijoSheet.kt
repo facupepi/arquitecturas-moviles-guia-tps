@@ -102,15 +102,14 @@ class FijoSheet : HojaBase() {
 
         when {
             nombre.isBlank() -> binding.etNombre.error = getString(R.string.nombre_vacio)
-            monto == null || monto <= 0 ->
-                binding.etMonto.error = getString(R.string.monto_invalido)
+            monto == null || CampoMonto.error(monto) != null ->
+                binding.etMonto.error = getString(CampoMonto.error(monto) ?: R.string.monto_invalido)
             dia == null || dia !in 1..31 -> binding.etDia.error = getString(R.string.dia_invalido)
             categoria == null ->
                 Toast.makeText(requireContext(), R.string.elegi_categoria, Toast.LENGTH_SHORT).show()
             else -> {
                 repositorio.guardar(
-                    GastoFijo(
-                        id = fijo?.id.orEmpty(),
+                    (fijo ?: GastoFijo()).copy(
                         nombre = nombre,
                         monto = monto,
                         categoriaId = categoria.id,

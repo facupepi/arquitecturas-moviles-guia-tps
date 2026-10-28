@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import ar.edu.utn.frsfco.finanzas.databinding.ActivityHistorialBinding
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.DocumentSnapshot
 
 /**
  * Todos los gastos del tramo, sin recortar.
@@ -36,7 +37,13 @@ class HistorialActivity : PantallaBase() {
 
     private lateinit var periodo: PrincipalActivity.Periodo
     private var categoriaFija: String? = null
+
+    /** Tamaño del lote, fijado al abrir la pantalla para que no cambie entre una página y la siguiente. */
+    private val loteHistorial = ParametrosRemotos.tamanoLoteHistorial()
     private var buscado = ""
+    private var ultimoDocCursor: DocumentSnapshot? = null
+    private var cargandoMas = false
+    private var cargandoInicial = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,13 +67,28 @@ class HistorialActivity : PantallaBase() {
             refrescar()
         }
 
+        binding.btnCargarMas.setOnClickListener {
+            cargarSiguientePagina()
+        }
+
         // La hoja avisa por acá y no por una función suelta: así el aviso llega
         // igual cuando la pantalla se rehizo mientras la hoja estaba abierta.
         supportFragmentManager.setFragmentResultListener(
             GastoSheet.PEDIDO, this
         ) { _, datos ->
             val borrado = BundleCompat.getSerializable(datos, GastoSheet.BORRADO, Gasto::class.java)
-            if (borrado != null) avisarConDeshacer(borrado) else avisar(datos.getInt(HojaBase.MENSAJE))
+            if (borrado != null) {
+                avisarConDeshacer(borrado)
+                if (periodo != PrincipalActivity.Periodo.ESTE_MES) {
+                    gastos.removeAll { it.id == borrado.id }
+                    refrescar()
+                }
+            } else {
+                avisar(datos.getInt(HojaBase.MENSAJE))
+                if (periodo != PrincipalActivity.Periodo.ESTE_MES) {
+                    cargarPrimeraPagina()
+                }
+            }
         }
     }
 
@@ -76,10 +98,34 @@ class HistorialActivity : PantallaBase() {
             categorias = recibidas
             refrescar()
         }
-        escuchas += gastosRepo.escuchar { recibidos ->
-            gastos.clear()
-            gastos.addAll(recibidos)
-            refrescar()
+        // Estrategia de escalabilidad del TP3:
+        // 1. ESTE_MES, con o sin categoría fija: escucha en tiempo real acotada al mes en curso.
+        // 2. MES_PASADO, ESTE_ANIO y TODO, con o sin categoría: consulta paginada en el servidor
+        //    con rango estricto de fechas y cursor (startAfter), evitando traer datos fuera de período
+        //    y permitiendo explorar miles de movimientos con el botón 'Cargar más'.
+        val cat = categoriaFija
+        if (cat != null && periodo == PrincipalActivity.Periodo.ESTE_MES) {
+            binding.btnCargarMas.visibility = View.GONE
+            val (desde, hasta) = Tramos.rango(periodo)
+            escuchas += gastosRepo.escucharPorCategoriaEnRango(
+                cat, requireNotNull(desde), requireNotNull(hasta)
+            ) { recibidos ->
+                gastos.clear()
+                gastos.addAll(recibidos)
+                refrescar()
+            }
+        } else if (cat == null && periodo == PrincipalActivity.Periodo.ESTE_MES) {
+            binding.btnCargarMas.visibility = View.GONE
+            val (desde, hasta) = Tramos.rango(periodo)
+            escuchas += gastosRepo.escucharEnRango(
+                requireNotNull(desde), requireNotNull(hasta)
+            ) { recibidos ->
+                gastos.clear()
+                gastos.addAll(recibidos)
+                refrescar()
+            }
+        } else {
+            cargarPrimeraPagina()
         }
         escuchas += mediosRepo.escuchar { recibidos ->
             medios = recibidos
@@ -91,6 +137,76 @@ class HistorialActivity : PantallaBase() {
         super.onStop()
         escuchas.forEach { it.remove() }
         escuchas.clear()
+    }
+
+    /**
+     * Carga el primer lote de 30 movimientos históricos mediante consulta acotada por período
+     * y categoría en el servidor de Firestore, admitiendo paginación por cursor.
+     */
+    private fun cargarPrimeraPagina() {
+        val (desde, hasta) = Tramos.rango(periodo)
+        ultimoDocCursor = null
+        cargandoInicial = true
+        binding.btnCargarMas.isEnabled = false
+        gastosRepo.consultarPaginado(
+            desde = desde,
+            hasta = hasta,
+            categoriaId = categoriaFija,
+            limite = loteHistorial.toLong(),
+            ultimoDoc = null,
+            alCompletar = { recibidos, nuevoCursor ->
+            if (isFinishing || isDestroyed) return@consultarPaginado
+            gastos.clear()
+            gastos.addAll(recibidos)
+            ultimoDocCursor = nuevoCursor
+            cargandoInicial = false
+            binding.btnCargarMas.isEnabled = true
+            binding.btnCargarMas.visibility = if (recibidos.size >= loteHistorial) View.VISIBLE else View.GONE
+            refrescar()
+        },
+            alFallar = {
+            if (isFinishing || isDestroyed) return@consultarPaginado
+            cargandoInicial = false
+            binding.btnCargarMas.isEnabled = true
+            binding.btnCargarMas.visibility = View.GONE
+            refrescar()
+            avisar(R.string.error_cargar_historial)
+        }
+        )
+    }
+
+    /**
+     * Obtiene el siguiente lote de 30 registros continuando desde el último DocumentSnapshot (cursor),
+     * manteniendo el rango de fechas y filtro de categoría.
+     */
+    private fun cargarSiguientePagina() {
+        val cursor = ultimoDocCursor ?: return
+        if (cargandoMas) return
+        cargandoMas = true
+        binding.btnCargarMas.isEnabled = false
+        val (desde, hasta) = Tramos.rango(periodo)
+        gastosRepo.consultarPaginado(
+            desde = desde,
+            hasta = hasta,
+            categoriaId = categoriaFija,
+            limite = loteHistorial.toLong(),
+            ultimoDoc = cursor,
+            alCompletar = { recibidos, nuevoCursor ->
+            if (isFinishing || isDestroyed) return@consultarPaginado
+            cargandoMas = false
+            binding.btnCargarMas.isEnabled = true
+            gastos.addAll(recibidos.filterNot { nuevo -> gastos.any { it.id == nuevo.id } })
+            ultimoDocCursor = nuevoCursor
+            binding.btnCargarMas.visibility = if (recibidos.size >= loteHistorial) View.VISIBLE else View.GONE
+            refrescar()
+        },
+            alFallar = {
+            if (isFinishing || isDestroyed) return@consultarPaginado
+            cargandoMas = false
+            binding.btnCargarMas.isEnabled = true
+            avisar(R.string.error_cargar_historial)
+        }
+        )
     }
 
     private fun refrescar() {
@@ -108,7 +224,7 @@ class HistorialActivity : PantallaBase() {
             visibles.size,
             Plata.formatear(visibles.sumOf { it.monto })
         )
-        binding.vacio.visibility = if (visibles.isEmpty()) View.VISIBLE else View.GONE
+        binding.vacio.visibility = if (!cargandoInicial && visibles.isEmpty()) View.VISIBLE else View.GONE
     }
 
     /** Busca en el detalle que escribió el usuario y en el nombre de la categoría. */
@@ -127,10 +243,19 @@ class HistorialActivity : PantallaBase() {
         Snackbar.make(binding.root, mensaje, Snackbar.LENGTH_SHORT).show()
     }
 
-    /** Borrar no se puede deshacer desde el servidor, así que se repone el documento. */
+    /** Borrar no se puede deshacer desde el servidor, así que se repone el documento y se reincorpora a la lista. */
     private fun avisarConDeshacer(borrado: Gasto) {
         Snackbar.make(binding.root, R.string.gasto_borrado, Snackbar.LENGTH_LONG)
-            .setAction(R.string.deshacer) { gastosRepo.restaurar(borrado) }
+            .setAction(R.string.deshacer) {
+                gastosRepo.restaurar(borrado)
+                val entraEnPeriodo = Tramos.entra(borrado.fecha, periodo)
+                val coincideCategoria = categoriaFija == null || borrado.categoriaId == categoriaFija
+                if (entraEnPeriodo && coincideCategoria && gastos.none { it.id == borrado.id }) {
+                    gastos.add(borrado)
+                    gastos.sortByDescending { it.fecha }
+                    refrescar()
+                }
+            }
             .setActionTextColor(ContextCompat.getColor(this, R.color.verde_claro))
             .show()
     }

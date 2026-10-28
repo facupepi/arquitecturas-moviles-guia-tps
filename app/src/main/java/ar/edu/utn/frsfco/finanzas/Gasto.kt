@@ -89,5 +89,7 @@ data class GastoFijo(
     val categoriaId: String = "",
     val medioId: String = "",
     /** Día del mes en que corresponde. Si el mes es más corto, se usa el último día. */
-    val diaDelMes: Int = 1
+    val diaDelMes: Int = 1,
+    /** Mes (aaaa-mm) en que el usuario borró el gasto generado; ese mes no se vuelve a crear. */
+    val omitidoMes: String = ""
 ) : Serializable

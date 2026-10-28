@@ -1,0 +1,15 @@
+Usuario anonimo de prueba creado: jUX9rI...
+
+--- Escrituras en tandas simultaneas crecientes ---
+tanda de  50 escrituras simultaneas:   60 ops/s | mediana 628 ms | p95 696 ms | max 798 ms
+tanda de 100 escrituras simultaneas:   85 ops/s | mediana 863 ms | p95 1055 ms | max 1138 ms
+tanda de 150 escrituras simultaneas:  112 ops/s | mediana 510 ms | p95 1160 ms | max 1294 ms
+tanda de 200 escrituras simultaneas:  124 ops/s | mediana 824 ms | p95 1444 ms | max 1568 ms
+escrituras aceptadas: 500/500 | errores: 0 | tiempo total 11.0 s
+
+--- Lecturas ---
+coleccion completa : 500 documentos en 249 ms
+pagina de treinta  : 30 documentos en 127 ms
+
+--- Limpieza ---
+documentos borrados: 500/500 | cuenta de prueba eliminada: true

@@ -78,8 +78,9 @@ class IngresoSheet : HojaBase() {
 
     private fun guardar() {
         val monto = Plata.leer(binding.etMonto.text.toString())
-        if (monto == null || monto <= 0) {
-            binding.etMonto.error = getString(R.string.monto_invalido)
+        val aviso = CampoMonto.error(monto)
+        if (monto == null || aviso != null) {
+            binding.etMonto.error = getString(aviso ?: R.string.monto_invalido)
             return
         }
         val existente = ingreso
