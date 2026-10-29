@@ -1,12 +1,40 @@
-# Mis Gastos v6 (TP6: retención de usuarios)
+# Mis Gastos
 
-Aplicación Android nativa (Kotlin) para registrar gastos e ingresos, con Firebase como base de datos. Esta versión (`ar.edu.utn.frsfco.finanzas.v6`) suma las estrategias de retención del TP6 de Arquitecturas Móviles (UTN FRSFCO) sobre la v5 (monetización):
+Aplicación Android nativa (Kotlin, vistas XML) para registrar gastos e ingresos y ver cuánto se gasta en cada categoría. Los datos se guardan en Firebase (Firestore, con ingreso por Google o sin cuenta). Se desarrolla en la materia Arquitecturas Móviles de la UTN FRSFCO: cada trabajo práctico que toca la aplicación agrega una versión nueva.
+
+La versión actual es la **v6**.
+
+## Historial de versiones
+
+Cada versión es un commit sobre `main`, apilado sobre la anterior, sin ramas. El título del commit indica el número de versión y lo que incorpora, y el trabajo práctico va al final, entre paréntesis. Las versiones siguen el orden en que se hicieron, que no coincide con el número de cada trabajo práctico.
+
+| Commit | Versión | Trabajo práctico | Qué incorpora |
+|---|---|---|---|
+| `12ac1f7` | 1 | TP2 | Producto mínimo. Registro de gastos con categorías, resumen del mes con gráfico por categoría, ingreso con Google o sin cuenta, y datos en Firestore con reglas de seguridad por usuario. |
+| `7fbf5f6` | 2 | TP2 | Cambios surgidos de la prueba con usuarios. Ingresos y saldo, gastos recurrentes, medios de pago propios, búsqueda de gastos, exportación a planilla y pantalla de ajustes. |
+| `4a95f33` | 3 | TP3 | Estrategias de escalabilidad. Cada período consulta solo su rango de fechas, el historial carga por lotes, el tamaño del lote se ajusta desde Remote Config, y las reglas e índices de Firestore se endurecen. Incluye pruebas de carga en `pruebas/`. |
+| `6453849` | 4 | TP7 | Integración de APIs y SDK. Cotización del dólar (con una segunda fuente de respaldo), comparación del gasto con la inflación y lectura de tickets con ML Kit. |
+| `50628e8` | 5 | TP4 | Monetización. Banner de publicidad, suscripción Plus semanal, mensual y anual, cupo de tres escaneos de tickets por mes y eventos de medición. |
+| `1f4a24d` | 6 | TP6 | Retención de usuarios. Recordatorio diario, resumen semanal, racha y logros, aviso por inactividad y campañas de notificaciones push. |
+
+Desde la versión 3, el identificador de la aplicación lleva el sufijo de su versión (`ar.edu.utn.frsfco.finanzas.v3`, `.v4`, `.v5`, `.v6`). Por eso todas pueden instalarse a la vez en un mismo teléfono. Comparten el proyecto de Firebase, pero cada una está registrada como aplicación aparte.
+
+### Convención de los commits
+
+- **Título.** `<Número> versión con <lo que incorpora> (TPn)`. Por ejemplo, `Sexta versión con estrategias de retención de usuarios (TP6)`.
+- **Cuerpo.** Explica qué cambia, por qué, y deja claro si la versión toca o no la base de datos y sus reglas.
+- **Un commit por versión.** Una corrección posterior se agrega como commit aparte, con el trabajo práctico entre paréntesis al final del título.
+- **Claves fuera del repositorio.** `local.properties` y `app/google-services.json` no se versionan.
+
+## Versión actual (v6)
+
+Esta versión (`ar.edu.utn.frsfco.finanzas.v6`) suma las estrategias de retención del TP6 sobre la v5 (monetización):
 
 - **Recordatorio diario.** A la hora elegida (por defecto las 21:00), solo si ese día no se registró ningún gasto. Menciona la racha y abre la carga de un gasto.
 - **Resumen semanal.** Los domingos a las 20:00, con el total de la semana, la categoría principal y la variación frente a la anterior. Se calcula en el teléfono.
-- **Racha y logros.** Días seguidos con gastos y cinco logros, calculados con los gastos ya guardados.
+- **Racha y logros.** Días seguidos con gastos y cinco logros, calculados con los gastos ya guardados. Los gastos recurrentes que la aplicación carga sola no cuentan.
 - **Aviso por inactividad.** Se reprograma cada vez que se abre la aplicación; llega solo tras 7 días sin uso.
-- **Campañas push.** Firebase Cloud Messaging, con temas `v6_todos`, `v6_gratuito` y `v6_plus`, y un dato `destino` (`registrar`, `logros`, `planes`, `resumen`) que indica qué pantalla abrir.
+- **Campañas push.** Firebase Cloud Messaging, con temas `v6_todos`, `v6_gratuito` y `v6_plus`, y un dato `destino` (`registrar`, `logros`, `planes`, `resumen`) que indica qué pantalla abrir. Apagar las novedades en los ajustes da de baja los temas y borra el token del teléfono.
 
 Convive con las versiones anteriores en el mismo proyecto de Firebase: es una aplicación registrada aparte, no cambia la base de datos ni sus reglas, y la configuración remota solo sumó parámetros.
 
