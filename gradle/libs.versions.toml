@@ -1,6 +1,6 @@
 [versions]
 agp = "8.5.2"
-kotlin = "1.9.24"
+kotlin = "2.1.0"
 googleServices = "4.4.2"
 coreKtx = "1.13.1"
 appcompat = "1.7.0"
@@ -11,6 +11,8 @@ firebaseBom = "33.3.0"
 credentials = "1.3.0"
 googleid = "1.1.1"
 recyclerview = "1.3.2"
+playServicesAds = "24.0.0"
+revenuecat = "9.29.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -26,6 +28,10 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
+
+# Monetización: anuncios y compras dentro de la app.
+play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
+revenuecat-purchases = { group = "com.revenuecat.purchases", name = "purchases", version.ref = "revenuecat" }
 
 # Entrada con Google, por el administrador de credenciales de Android.
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }

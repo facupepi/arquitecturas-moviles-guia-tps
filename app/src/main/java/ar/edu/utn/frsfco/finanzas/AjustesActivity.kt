@@ -1,6 +1,7 @@
 package ar.edu.utn.frsfco.finanzas
 
 import android.content.Intent
+import android.net.Uri
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,7 +9,9 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import ar.edu.utn.frsfco.finanzas.databinding.ActivityAjustesBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaFijoBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaIngresoBinding
@@ -61,6 +64,20 @@ class AjustesActivity : PantallaBase() {
         binding.btnNuevoMedio.setOnClickListener { abrirHojaMedio(null) }
         binding.btnExportar.setOnClickListener { exportar() }
         binding.btnSalir.setOnClickListener { confirmarSalida() }
+        binding.btnPlanes.setOnClickListener { PlanesSheet().show(supportFragmentManager, "planes") }
+        binding.btnAdministrar.setOnClickListener { abrirSuscripciones() }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                Suscripcion.esPlus.collect { plus ->
+                    binding.tvPlanEstado.setText(if (plus) R.string.plan_plus_ajustes else R.string.plan_gratuito)
+                    binding.btnPlanes.visibility = if (plus) View.GONE else View.VISIBLE
+                    binding.btnAdministrar.visibility = if (plus) View.VISIBLE else View.GONE
+                }
+            }
+        }
+        supportFragmentManager.setFragmentResultListener(PlanesSheet.RESULTADO, this) { _, datos ->
+            datos.getString(HojaBase.MENSAJE)?.let { Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show() }
+        }
         binding.btnVincular.setOnClickListener { vincularConGoogle() }
 
         escucharHojas()
@@ -232,6 +249,16 @@ class AjustesActivity : PantallaBase() {
      * Consulta bajo demanda todos los gastos, arma una planilla y la manda a donde el usuario quiera.
      * Al no escuchar la colección en tiempo real desde el inicio de la pantalla, evita lecturas masivas.
      */
+    /** Una suscripción se cancela en la tienda: se abre la página de suscripciones de Google Play. */
+    private fun abrirSuscripciones() {
+        val direccion = "https://play.google.com/store/account/subscriptions?package=$packageName"
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(direccion)))
+        } catch (e: Exception) {
+            Snackbar.make(binding.root, R.string.administrar_sin_tienda, Snackbar.LENGTH_LONG).show()
+        }
+    }
+
     private fun exportar() {
         binding.btnExportar.isEnabled = false
         gastosRepo.obtenerTodos(
@@ -352,12 +379,15 @@ class AjustesActivity : PantallaBase() {
     private fun cerrarSesion() {
         escuchas.forEach { it.remove() }
         escuchas.clear()
-        FirebaseAuth.getInstance().signOut()
-        startActivity(
-            Intent(this, LoginActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        )
-        finish()
+        lifecycleScope.launch {
+            Suscripcion.olvidar()
+            FirebaseAuth.getInstance().signOut()
+            startActivity(
+                Intent(this@AjustesActivity, LoginActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            finish()
+        }
     }
 
     private fun avisar(mensaje: Int) {

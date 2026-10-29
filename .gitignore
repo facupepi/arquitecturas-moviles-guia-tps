@@ -1,6 +1,7 @@
 # Compilación
 build/
 .gradle/
+.kotlin/
 captures/
 .externalNativeBuild
 .cxx

@@ -2,6 +2,7 @@ package ar.edu.utn.frsfco.finanzas
 
 import android.app.Application
 import android.content.res.Configuration
+import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 
 /**
@@ -18,6 +19,7 @@ class Aplicacion : Application() {
         super.onCreate()
         Idioma.fijar()
         ParametrosRemotos.iniciar()
+        Suscripcion.iniciar(this, FirebaseAuth.getInstance().currentUser?.uid)
     }
 
     override fun onConfigurationChanged(nueva: Configuration) {

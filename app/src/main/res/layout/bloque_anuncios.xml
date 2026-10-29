@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Publicidad de la versión gratuita. Arriba, la fila para quitarla con una suscripción;
+     abajo, el banner. Dos divisores lo separan del contenido y del menú para que el
+     anuncio nunca quede pegado a algo que se toca. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bloqueAnuncios"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:background="@color/superficie"
+    android:orientation="vertical"
+    android:visibility="gone">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/borde" />
+
+    <TextView
+        android:id="@+id/btnQuitarAnuncios"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackground"
+        android:drawablePadding="8dp"
+        android:fontFamily="@font/poppins_medium"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="@string/quitar_anuncios"
+        android:textColor="@color/verde"
+        android:textSize="13sp"
+        app:drawableStartCompat="@drawable/ic_corona"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/borde" />
+
+    <FrameLayout
+        android:id="@+id/contenedorBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="50dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/borde" />
+
+</LinearLayout>

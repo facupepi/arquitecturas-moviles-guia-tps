@@ -22,6 +22,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Finanzas">
 
+        <!-- Identificador de la aplicación en AdMob. Lo reemplaza el valor de local.properties si existe. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+
         <!-- Pantalla de entrada. Decide si mostrar el acceso o ir directo al resumen. -->
         <activity
             android:name=".LoginActivity"

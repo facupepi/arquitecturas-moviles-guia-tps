@@ -55,6 +55,7 @@ class HistorialActivity : PantallaBase() {
         }.getOrDefault(PrincipalActivity.Periodo.ESTE_MES)
         categoriaFija = intent.getStringExtra(EXTRA_CATEGORIA)
 
+        Anuncios.instalar(this, binding.anuncios.root, null) { }
         binding.barra.setTitle(Tramos.rotulo(periodo))
         binding.barra.setNavigationOnClickListener { finish() }
 

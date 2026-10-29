@@ -6,6 +6,34 @@
       },
       "description": "Cantidad de movimientos que lee cada lote de la pantalla Historial. Reducirlo baja el consumo de lecturas diarias.",
       "valueType": "NUMBER"
+    },
+    "mostrar_banner": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Si la versión gratuita muestra el banner de publicidad. Apagarlo lo quita sin publicar una versión nueva.",
+      "valueType": "BOOLEAN"
+    },
+    "plan_destacado": {
+      "defaultValue": {
+        "value": "mensual"
+      },
+      "description": "Plan que se resalta como recomendado en la hoja de planes: semanal, mensual o anual.",
+      "valueType": "STRING"
+    },
+    "oferta_plus": {
+      "defaultValue": {
+        "value": "tres_escalones"
+      },
+      "description": "Variante de la oferta: tres_escalones (semanal, mensual y anual) o mes_y_anio.",
+      "valueType": "STRING"
+    },
+    "escaneos_gratis": {
+      "defaultValue": {
+        "value": "3"
+      },
+      "description": "Cantidad de escaneos de ticket gratuitos por mes antes de ofrecer Plus.",
+      "valueType": "NUMBER"
     }
   }
 }

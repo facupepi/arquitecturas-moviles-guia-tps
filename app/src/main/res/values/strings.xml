@@ -208,4 +208,30 @@
     <string name="anio_detalle_sin_inflacion">Gasto acumulado hasta el %1$s.</string>
     <string name="todo_etiqueta">De %1$s a %2$s</string>
     <string name="todo_detalle">Inflación acumulada en ese período: %1$s&#160;%%.</string>
+
+    <!-- Monetización -->
+    <string name="quitar_anuncios">Quitar anuncios con Plus</string>
+    <string name="planes_titulo">Mis Gastos Plus</string>
+    <string name="planes_bajada">Suscripción que quita los anuncios y elimina el límite mensual de escaneos de tickets. Puede cancelarse en cualquier momento.</string>
+    <string name="planes_cargando">Cargando planes…</string>
+    <string name="planes_sin_tienda">La tienda de compras no está disponible en esta versión.</string>
+    <string name="planes_vacio">No hay planes disponibles por el momento.</string>
+    <string name="planes_error">No se pudieron cargar los planes. Revise la conexión e intente de nuevo.</string>
+    <string name="plus_activo">El plan Plus está activo. No se muestran anuncios y el escaneo de tickets no tiene límite.</string>
+    <string name="continuar">Continuar</string>
+    <string name="plan_semanal">Plan semanal</string>
+    <string name="plan_mensual">Plan mensual</string>
+    <string name="plan_anual">Plan anual</string>
+    <string name="plan_recomendado">Recomendado</string>
+    <string name="compra_ok">Compra de prueba completada, sin cobro. El plan Plus está activo.</string>
+    <string name="compra_cancelada">Compra cancelada.</string>
+    <string name="compra_fallida">No se pudo completar la compra (%1$s).</string>
+    <string name="plan_ajustes_titulo">Plan</string>
+    <string name="plan_gratuito">Plan gratuito. Se muestran anuncios y el escaneo de tickets tiene un cupo mensual.</string>
+    <string name="plan_plus_ajustes">Plan Plus activo. Sin anuncios y con escaneo de tickets sin límite. La suscripción se cancela desde Google Play.</string>
+    <string name="btn_ver_planes">Ver planes</string>
+    <string name="btn_administrar_suscripcion">Administrar o cancelar suscripción</string>
+    <string name="administrar_sin_tienda">No se pudo abrir la tienda. Busque Suscripciones en el menú de Google Play.</string>
+    <string name="marca_plus">Plus activo</string>
+    <string name="cupo_agotado">Se usaron los %1$d escaneos gratuitos de este mes. Con Plus el escaneo no tiene límite.</string>
 </resources>

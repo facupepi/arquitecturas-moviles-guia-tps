@@ -47,6 +47,20 @@
                     android:textAppearance="@style/Texto.Apoyo"
                     tools:text="alguien@gmail.com" />
 
+                <TextView
+                    android:id="@+id/marcaPlus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:drawablePadding="6dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:gravity="center_vertical"
+                    android:text="@string/marca_plus"
+                    android:textColor="@color/verde"
+                    android:textSize="13sp"
+                    android:visibility="gone"
+                    app:drawableStartCompat="@drawable/ic_corona" />
+
             </LinearLayout>
 
             <!-- Qué período se está mirando. Sale del borde para que se note que la
@@ -476,6 +490,11 @@
         app:elevation="6dp"
         app:icon="@drawable/ic_agregar"
         app:iconTint="@color/blanco" />
+
+    <!-- Publicidad de la versión gratuita, apoyada sobre el menú de abajo. -->
+    <include
+        android:id="@+id/anuncios"
+        layout="@layout/bloque_anuncios" />
 
     <include
         android:id="@+id/navegacion"

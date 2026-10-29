@@ -96,4 +96,8 @@
         android:text="@string/cargar_mas"
         android:visibility="gone" />
 
+    <include
+        android:id="@+id/anuncios"
+        layout="@layout/bloque_anuncios" />
+
 </LinearLayout>

@@ -9,6 +9,7 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -228,6 +229,14 @@ class GastoSheet : HojaBase() {
     }
 
     private fun elegirOrigenDelTicket() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        val cupo = ParametrosRemotos.escaneosGratis()
+        if (!Acceso.puedeEscanear(Suscripcion.esPlus.value, CupoEscaneos.usados(requireContext(), uid), cupo)) {
+            Embudo.registrar(requireContext(), Embudo.CUPO_AGOTADO)
+            Toast.makeText(requireContext(), getString(R.string.cupo_agotado, cupo), Toast.LENGTH_LONG).show()
+            PlanesSheet().show(parentFragmentManager, "planes")
+            return
+        }
         PopupMenu(requireContext(), binding.btnEscanear).apply {
             menu.add(0, 1, 0, R.string.ticket_sacar_foto)
             menu.add(0, 2, 1, R.string.ticket_elegir_imagen)
@@ -249,6 +258,7 @@ class GastoSheet : HojaBase() {
     /** Pasa la imagen por ML Kit y, si encuentra un importe, lo deja en el campo para que se revise. */
     private fun leerTicket(imagen: Uri) {
         avisar(R.string.ticket_leyendo)
+        CupoEscaneos.registrar(requireContext(), FirebaseAuth.getInstance().currentUser?.uid.orEmpty())
         EscanerTicket.leer(requireContext().applicationContext, imagen) { resultado ->
             if (_binding == null) return@leer
             val lectura = resultado.getOrNull()

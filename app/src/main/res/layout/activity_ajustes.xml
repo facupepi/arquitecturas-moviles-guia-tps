@@ -25,6 +25,59 @@
             app:title="@string/ajustes"
             app:titleTextAppearance="@style/Texto.Titulo" />
 
+        <!-- Plan de la cuenta: gratuito o Plus. -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Tarjeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:text="@string/plan_ajustes_titulo"
+                    android:textColor="@color/texto"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tvPlanEstado"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:lineSpacingExtra="3dp"
+                    android:textAppearance="@style/Texto.Apoyo" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPlanes"
+                    style="@style/Boton.Blanco"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/btn_ver_planes"
+                    app:icon="@drawable/ic_corona"
+                    app:iconGravity="textStart" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAdministrar"
+                    style="@style/Boton.Blanco"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/btn_administrar_suscripcion"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Sólo para quien está probando sin cuenta. Sin esto tendría que cerrar
              sesión para entrar con Google, y ahí perdería lo que cargó. -->
         <com.google.android.material.card.MaterialCardView

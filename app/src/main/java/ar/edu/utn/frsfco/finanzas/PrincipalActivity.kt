@@ -8,10 +8,15 @@ import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.os.BundleCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.coroutines.launch
 import ar.edu.utn.frsfco.finanzas.databinding.ActivityPrincipalBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaComparacionBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaDesgloseBinding
@@ -460,6 +465,13 @@ class PrincipalActivity : PantallaBase() {
 
         prepararNavegacion(binding.navegacion.barraNavegacion, R.id.navResumen)
         encogerBotonAlBajar()
+        Anuncios.instalar(this, binding.anuncios.root, binding.navegacion.barraNavegacion) { alto -> acomodarPorAnuncios(alto) }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                Suscripcion.esPlus.collect { plus -> binding.marcaPlus.visibility = if (plus) View.VISIBLE else View.GONE }
+            }
+        }
+        auth.currentUser?.uid?.let { uid -> lifecycleScope.launch { Suscripcion.identificar(uid) } }
         binding.btnAgregar.setOnClickListener { abrirCarga() }
         binding.btnVerTodos.setOnClickListener { abrirHistorial() }
         binding.btnQuitarFiltro.setOnClickListener { cambiarFiltro(null) }
@@ -572,6 +584,16 @@ class PrincipalActivity : PantallaBase() {
         // instalación nueva haría crear de nuevo los fijos que ya están guardados.
         if (periodo == Periodo.MES_PASADO || fijos.isEmpty() || !gastosRepo.confirmadoPorServidor) return
         FijosRepositorio.materializar(fijos, gastos, gastosRepo)
+    }
+
+    /** Sube el botón flotante y el final del desplazamiento lo que mide el bloque de anuncios. */
+    private fun acomodarPorAnuncios(alto: Int) {
+        val densidad = resources.displayMetrics.density
+        val hay = alto > 0
+        val boton = binding.btnAgregar.layoutParams as ViewGroup.MarginLayoutParams
+        boton.bottomMargin = Acceso.margenBoton((86 * densidad).toInt(), alto, hay)
+        binding.btnAgregar.layoutParams = boton
+        binding.desplazable.setPadding(0, 0, 0, Acceso.margenBoton((150 * densidad).toInt(), alto, hay))
     }
 
     private fun mostrarCuenta() {
