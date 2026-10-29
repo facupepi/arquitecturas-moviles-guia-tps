@@ -234,4 +234,79 @@
     <string name="administrar_sin_tienda">No se pudo abrir la tienda. Busque Suscripciones en el menú de Google Play.</string>
     <string name="marca_plus">Plus activo</string>
     <string name="cupo_agotado">Se usaron los %1$d escaneos gratuitos de este mes. Con Plus el escaneo no tiene límite.</string>
+
+    <!-- TP6: retención. Notificaciones, racha y logros. -->
+    <string name="canal_recordatorios">Recordatorios</string>
+    <string name="canal_recordatorios_detalle">Aviso diario si no se registraron gastos y aviso tras varios días sin usar la aplicación.</string>
+    <string name="canal_resumen">Resumen semanal</string>
+    <string name="canal_resumen_detalle">Cada domingo, lo gastado en la semana y la comparación con la anterior.</string>
+    <string name="canal_novedades">Novedades</string>
+    <string name="canal_novedades_detalle">Funciones nuevas y consejos para ordenar los gastos.</string>
+
+    <string name="recordatorio_titulo">¿Registró los gastos de hoy?</string>
+    <string name="recordatorio_sin_racha">Cargarlos lleva unos segundos y mantiene al día el resumen del mes.</string>
+    <plurals name="recordatorio_con_racha">
+        <item quantity="one">Lleva %1$d día seguido registrando gastos. Cargue los de hoy para no cortar la racha.</item>
+        <item quantity="other">Lleva %1$d días seguidos registrando gastos. Cargue los de hoy para no cortar la racha.</item>
+    </plurals>
+
+    <string name="resumen_titulo">Resumen de la semana</string>
+    <plurals name="resumen_total">
+        <item quantity="one">Gastó %1$s en %2$d movimiento.</item>
+        <item quantity="other">Gastó %1$s en %2$d movimientos.</item>
+    </plurals>
+    <string name="resumen_principal">La categoría principal fue %1$s, con el %2$d&#160;%% del total.</string>
+    <string name="resumen_menos">Es un %1$d&#160;%% menos que la semana anterior.</string>
+    <string name="resumen_mas">Es un %1$d&#160;%% más que la semana anterior.</string>
+    <string name="resumen_igual">Es lo mismo que la semana anterior.</string>
+
+    <string name="inactividad_titulo">Registro de gastos pendiente</string>
+    <string name="inactividad_texto">Pasaron %1$d días sin abrir Mis Gastos. Registre lo gastado en estos días para que el resumen del mes quede completo.</string>
+
+    <plurals name="racha_dias">
+        <item quantity="one">Racha de %1$d día</item>
+        <item quantity="other">Racha de %1$d días</item>
+    </plurals>
+    <plurals name="racha_mejor">
+        <item quantity="one">Mejor racha: %1$d día seguido</item>
+        <item quantity="other">Mejor racha: %1$d días seguidos</item>
+    </plurals>
+    <string name="racha_cero">Sin racha activa</string>
+    <string name="racha_empezar">Registre un gasto hoy para empezar una racha</string>
+    <string name="racha_fila">%1$s · %2$d de %3$d logros</string>
+
+    <string name="logros_titulo">Racha y logros</string>
+    <string name="logros_bajada">La racha cuenta los días seguidos con al menos un gasto registrado. Si hoy todavía no cargó nada, sigue vigente hasta la medianoche.</string>
+    <string name="logro_obtenido">Obtenido</string>
+    <string name="logro_primer_gasto">Primer gasto</string>
+    <string name="logro_primer_gasto_detalle">Registrar el primer gasto</string>
+    <string name="logro_racha_3">Tres días seguidos</string>
+    <string name="logro_racha_3_detalle">Registrar gastos tres días seguidos</string>
+    <string name="logro_racha_7">Una semana completa</string>
+    <string name="logro_racha_7_detalle">Registrar gastos siete días seguidos</string>
+    <string name="logro_racha_30">Un mes completo</string>
+    <string name="logro_racha_30_detalle">Registrar gastos treinta días seguidos</string>
+    <string name="logro_cincuenta">Cincuenta movimientos</string>
+    <string name="logro_cincuenta_detalle">Llegar a cincuenta gastos registrados</string>
+    <string name="logro_nuevo">Logro obtenido: %1$s</string>
+    <string name="ver">Ver</string>
+
+    <string name="permiso_titulo">¿Activar los recordatorios?</string>
+    <string name="permiso_texto">Mis Gastos puede avisarle a la noche si no registró gastos y enviarle cada domingo un resumen de la semana. Se puede cambiar en cualquier momento desde Ajustes.</string>
+    <string name="permiso_activar">Activar</string>
+    <string name="permiso_ahora_no">Ahora no</string>
+
+    <string name="notificaciones_titulo">Notificaciones</string>
+    <string name="notificaciones_bloqueadas">Las notificaciones están desactivadas en el teléfono. Mientras sigan así, ningún aviso va a llegar.</string>
+    <string name="notificaciones_activar">Activar notificaciones</string>
+    <string name="aviso_recordatorio">Recordatorio diario</string>
+    <string name="aviso_recordatorio_detalle">A las %1$s, solo si ese día no se registró ningún gasto.</string>
+    <string name="aviso_cambiar_horario">Cambiar horario</string>
+    <string name="aviso_horario_titulo">Horario del recordatorio</string>
+    <string name="aviso_resumen">Resumen semanal</string>
+    <string name="aviso_resumen_detalle">Los domingos a las 20:00, con lo gastado en la semana.</string>
+    <string name="aviso_inactividad">Aviso por inactividad</string>
+    <string name="aviso_inactividad_detalle">Si pasan %1$d días sin abrir la aplicación.</string>
+    <string name="aviso_novedades">Novedades</string>
+    <string name="aviso_novedades_detalle">Funciones nuevas y consejos para ordenar los gastos.</string>
 </resources>

@@ -20,6 +20,7 @@ class Aplicacion : Application() {
         Idioma.fijar()
         ParametrosRemotos.iniciar()
         Suscripcion.iniciar(this, FirebaseAuth.getInstance().currentUser?.uid)
+        Avisos.crearCanales(this)
     }
 
     override fun onConfigurationChanged(nueva: Configuration) {

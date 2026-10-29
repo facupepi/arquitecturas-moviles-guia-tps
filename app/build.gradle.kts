@@ -20,11 +20,11 @@ android {
 
     defaultConfig {
         applicationId = "ar.edu.utn.frsfco.finanzas"
-        applicationIdSuffix = ".v5"
+        applicationIdSuffix = ".v6"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "5.0"
+        versionName = "6.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Identificadores de muestra de Google: sirven anuncios de prueba sin cuenta.
@@ -89,6 +89,10 @@ dependencies {
     // TP4: anuncios y suscripciones.
     implementation(libs.play.services.ads)
     implementation(libs.revenuecat.purchases)
+
+    // TP6: retención. Notificaciones de Firebase y avisos programados en el teléfono.
+    implementation(libs.firebase.messaging)
+    implementation(libs.androidx.work)
 
     // Entrada con Google
     implementation(libs.androidx.credentials)

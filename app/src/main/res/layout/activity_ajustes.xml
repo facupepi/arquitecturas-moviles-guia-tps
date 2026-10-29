@@ -78,6 +78,145 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Notificaciones de retención: un interruptor por tipo de aviso. -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Tarjeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginEnd="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="8dp"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:gravity="center_vertical"
+                    android:text="@string/notificaciones_titulo"
+                    android:textColor="@color/texto"
+                    android:textSize="16sp"
+                    app:drawableStartCompat="@drawable/ic_campana" />
+
+                <!-- Solo si el sistema no deja mostrar notificaciones. -->
+                <LinearLayout
+                    android:id="@+id/bloqueBloqueadas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="@string/notificaciones_bloqueadas"
+                        android:textColor="@color/rojo"
+                        android:textSize="13sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnActivarAvisos"
+                        style="@style/Boton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/notificaciones_activar" />
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/swRecordatorio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="@string/aviso_recordatorio"
+                    android:textColor="@color/texto"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvRecordatorioDetalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="64dp"
+                    android:lineSpacingExtra="2dp"
+                    android:textAppearance="@style/Texto.Apoyo" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnHorario"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="36dp"
+                    android:paddingStart="0dp"
+                    android:text="@string/aviso_cambiar_horario"
+                    android:textColor="@color/verde" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/swResumen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="@string/aviso_resumen"
+                    android:textColor="@color/texto"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvResumenDetalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="64dp"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/aviso_resumen_detalle"
+                    android:textAppearance="@style/Texto.Apoyo" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/swInactividad"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="@string/aviso_inactividad"
+                    android:textColor="@color/texto"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvInactividadDetalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="64dp"
+                    android:lineSpacingExtra="2dp"
+                    android:textAppearance="@style/Texto.Apoyo" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/swNovedades"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="@string/aviso_novedades"
+                    android:textColor="@color/texto"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvNovedadesDetalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="64dp"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/aviso_novedades_detalle"
+                    android:textAppearance="@style/Texto.Apoyo" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Sólo para quien está probando sin cuenta. Sin esto tendría que cerrar
              sesión para entrar con Google, y ahí perdería lo que cargó. -->
         <com.google.android.material.card.MaterialCardView

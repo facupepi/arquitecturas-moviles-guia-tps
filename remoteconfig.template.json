@@ -34,6 +34,20 @@
       },
       "description": "Cantidad de escaneos de ticket gratuitos por mes antes de ofrecer Plus.",
       "valueType": "NUMBER"
+    },
+    "recordatorio_hora": {
+      "defaultValue": {
+        "value": "21"
+      },
+      "description": "Hora del recordatorio diario para quien todavía no eligió la suya (versión 6).",
+      "valueType": "NUMBER"
+    },
+    "dias_inactividad": {
+      "defaultValue": {
+        "value": "7"
+      },
+      "description": "Días sin abrir la aplicación antes del aviso de inactividad (versión 6).",
+      "valueType": "NUMBER"
     }
   }
 }

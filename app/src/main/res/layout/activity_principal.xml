@@ -61,6 +61,28 @@
                     android:visibility="gone"
                     app:drawableStartCompat="@drawable/ic_corona" />
 
+                <!-- Racha de días con gastos y logros. Al tocarla se abre la hoja de logros. -->
+                <TextView
+                    android:id="@+id/filaRacha"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/fondo_etiqueta"
+                    android:backgroundTint="@color/naranja_suave"
+                    android:drawablePadding="6dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:gravity="center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingTop="5dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="5dp"
+                    android:textColor="@color/texto"
+                    android:textSize="13sp"
+                    android:visibility="gone"
+                    app:drawableStartCompat="@drawable/ic_racha"
+                    tools:text="Racha de 5 días · 2 de 5 logros"
+                    tools:visibility="visible" />
+
             </LinearLayout>
 
             <!-- Qué período se está mirando. Sale del borde para que se note que la

@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Desde Android 13 mostrar notificaciones requiere que la persona lo autorice. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Para abrir la cámara del sistema desde la hoja de gasto. -->
     <queries>
         <intent>
@@ -27,10 +30,35 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="${admobAppId}" />
 
+        <!-- Notificaciones de Firebase: canal, ícono y color de las que muestra el sistema
+             cuando la aplicación está cerrada. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="novedades" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notificacion" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/verde" />
+
+        <!-- Recibe los mensajes de las campañas cuando la aplicación está abierta. -->
+        <service
+            android:name=".ServicioMensajes"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <!-- Pantalla de entrada. Decide si mostrar el acceso o ir directo al resumen. -->
+        <!-- singleTask: al tocar una campaña con la aplicación en segundo plano, el sistema
+             vuelve a pasar por acá con los datos de la notificación en lugar de solo traer
+             la tarea al frente, que los descartaría. -->
         <activity
             android:name=".LoginActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

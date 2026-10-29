@@ -2,6 +2,7 @@ package ar.edu.utn.frsfco.finanzas
 
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -212,6 +213,28 @@ class GastosRepositorio {
         }.addOnFailureListener { error ->
             alFallar(error)
         }
+    }
+
+    /**
+     * Gastos de [desde, hasta) con una consulta puntual, para los avisos programados y la
+     * racha. Usa el mismo índice de fecha que el resumen. Bloquea; llamar desde un hilo de fondo.
+     */
+    fun enRango(desde: Date, hasta: Date): List<Gasto> {
+        val consulta = coleccion()
+            .whereGreaterThanOrEqualTo("fecha", desde)
+            .whereLessThan("fecha", hasta)
+            .get()
+        return Tasks.await(consulta, 15, TimeUnit.SECONDS).map { mapear(it) }
+    }
+
+    /**
+     * Cantidad total de gastos guardados. El servidor los cuenta sin descargarlos; sin
+     * conexión devuelve nulo. Bloquea; llamar desde un hilo de fondo.
+     */
+    fun cantidadTotal(): Long? = try {
+        Tasks.await(coleccion().count().get(AggregateSource.SERVER), 10, TimeUnit.SECONDS).count
+    } catch (e: Exception) {
+        null
     }
 
     private fun mapear(doc: DocumentSnapshot): Gasto =

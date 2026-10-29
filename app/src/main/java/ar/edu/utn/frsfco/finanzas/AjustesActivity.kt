@@ -1,11 +1,13 @@
 package ar.edu.utn.frsfco.finanzas
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.credentials.exceptions.GetCredentialCancellationException
@@ -18,6 +20,8 @@ import ar.edu.utn.frsfco.finanzas.databinding.FilaIngresoBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaMedioBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.launch
@@ -53,6 +57,13 @@ class AjustesActivity : PantallaBase() {
         const val CONFIRMAR_DEPURACION = "confirmar_depuracion"
     }
 
+    private val pedirPermiso = registerForActivityResult(ActivityResultContracts.RequestPermission()) { concedido ->
+        Avisos.evento(this, "permiso_notificaciones", "resultado", if (concedido) "concedido" else "rechazado")
+        if (!concedido) abrirAjustesDelSistema()
+        mostrarAvisos()
+        Temas.sincronizar(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAjustesBinding.inflate(layoutInflater)
@@ -64,6 +75,7 @@ class AjustesActivity : PantallaBase() {
         binding.btnNuevoMedio.setOnClickListener { abrirHojaMedio(null) }
         binding.btnExportar.setOnClickListener { exportar() }
         binding.btnSalir.setOnClickListener { confirmarSalida() }
+        prepararAvisos()
         binding.btnPlanes.setOnClickListener { PlanesSheet().show(supportFragmentManager, "planes") }
         binding.btnAdministrar.setOnClickListener { abrirSuscripciones() }
         lifecycleScope.launch {
@@ -113,6 +125,8 @@ class AjustesActivity : PantallaBase() {
 
     override fun onStart() {
         super.onStart()
+        // El permiso puede haber cambiado desde los ajustes del sistema.
+        mostrarAvisos()
         escuchas += fijosRepo.escuchar { recibidos ->
             fijos = recibidos
             dibujarFijos()
@@ -366,6 +380,74 @@ class AjustesActivity : PantallaBase() {
 
     // ----------------------------------------------------------- cerrar sesión
 
+    /** Interruptores de cada aviso. Cada cambio reprograma las tareas en el teléfono. */
+    private fun prepararAvisos() {
+        binding.swRecordatorio.setOnCheckedChangeListener { _, activo ->
+            if (activo != Avisos.recordatorioActivo(this)) Avisos.guardarRecordatorio(this, activo)
+            binding.btnHorario.isEnabled = activo
+        }
+        binding.swResumen.setOnCheckedChangeListener { _, activo ->
+            if (activo != Avisos.resumenActivo(this)) Avisos.guardarResumen(this, activo)
+        }
+        binding.swInactividad.setOnCheckedChangeListener { _, activo ->
+            if (activo != Avisos.inactividadActiva(this)) {
+                Avisos.guardarInactividad(this, activo)
+                if (activo) Avisos.reprogramarInactividad(this)
+            }
+        }
+        binding.swNovedades.setOnCheckedChangeListener { _, activo ->
+            if (activo != Avisos.novedadesActivas(this)) Avisos.guardarNovedades(this, activo)
+        }
+        binding.btnHorario.setOnClickListener { elegirHorario() }
+        binding.btnActivarAvisos.setOnClickListener {
+            if (android.os.Build.VERSION.SDK_INT >= 33 && !Avisos.permisoYaPedido(this)) {
+                Avisos.marcarPermisoPedido(this)
+                pedirPermiso.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                abrirAjustesDelSistema()
+            }
+        }
+    }
+
+    private fun mostrarAvisos() {
+        binding.bloqueBloqueadas.visibility = if (Avisos.permitidas(this)) View.GONE else View.VISIBLE
+        binding.swRecordatorio.isChecked = Avisos.recordatorioActivo(this)
+        binding.swResumen.isChecked = Avisos.resumenActivo(this)
+        binding.swInactividad.isChecked = Avisos.inactividadActiva(this)
+        binding.swNovedades.isChecked = Avisos.novedadesActivas(this)
+        binding.btnHorario.isEnabled = Avisos.recordatorioActivo(this)
+        binding.tvRecordatorioDetalle.text = getString(
+            R.string.aviso_recordatorio_detalle,
+            String.format(Idioma.español, "%02d:%02d", Avisos.hora(this), Avisos.minuto(this))
+        )
+        binding.tvInactividadDetalle.text = getString(R.string.aviso_inactividad_detalle, ParametrosRemotos.diasInactividad())
+    }
+
+    private fun elegirHorario() {
+        val selector = MaterialTimePicker.Builder()
+            .setTimeFormat(TimeFormat.CLOCK_24H)
+            .setHour(Avisos.hora(this))
+            .setMinute(Avisos.minuto(this))
+            .setTitleText(R.string.aviso_horario_titulo)
+            .build()
+        selector.addOnPositiveButtonClickListener {
+            Avisos.guardarHorario(this, selector.hour, selector.minute)
+            mostrarAvisos()
+        }
+        selector.show(supportFragmentManager, "horario")
+    }
+
+    /** Si la persona ya rechazó el permiso, el sistema no lo vuelve a pedir: se abren sus ajustes. */
+    private fun abrirAjustesDelSistema() {
+        val intento = Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+            .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)
+        try {
+            startActivity(intento)
+        } catch (e: Exception) {
+            startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+        }
+    }
+
     private fun confirmarSalida() {
         // Al invitado hay que avisarle que se lleva los datos puestos.
         Confirmacion.pedir(
@@ -381,6 +463,7 @@ class AjustesActivity : PantallaBase() {
         escuchas.clear()
         lifecycleScope.launch {
             Suscripcion.olvidar()
+            Avisos.cancelarTodo(this@AjustesActivity)
             FirebaseAuth.getInstance().signOut()
             startActivity(
                 Intent(this@AjustesActivity, LoginActivity::class.java)

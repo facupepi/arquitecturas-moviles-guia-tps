@@ -1,5 +1,6 @@
 package ar.edu.utn.frsfco.finanzas
 
+import android.Manifest
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -9,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.os.BundleCompat
@@ -16,11 +18,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ar.edu.utn.frsfco.finanzas.databinding.ActivityPrincipalBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaComparacionBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaDesgloseBinding
 import ar.edu.utn.frsfco.finanzas.databinding.FilaLeyendaBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
@@ -58,6 +63,19 @@ class PrincipalActivity : PantallaBase() {
     // Trabajo fuera del hilo principal para las integraciones (TP7): llamadas HTTP y consultas puntuales.
     private val hiloPrincipal = Handler(Looper.getMainLooper())
     private val ejecutor = Executors.newCachedThreadPool()
+
+    /** Racha y logros de la cuenta; nulo hasta que termina la primera consulta. */
+    private var actividad: Actividad.Estado? = null
+
+    private var ultimoCalculo = 0L
+
+    /** Pantalla pedida por una notificación, que se abre cuando los datos están listos. */
+    private var destinoPendiente: String? = null
+
+    private val pedirPermiso = registerForActivityResult(ActivityResultContracts.RequestPermission()) { concedido ->
+        Avisos.evento(this, "permiso_notificaciones", "resultado", if (concedido) "concedido" else "rechazado")
+        Temas.sincronizar(this)
+    }
 
     /** Cambia el filtro por categoría y redibuja con los gastos que ya llegaron. */
     private fun cambiarFiltro(categoria: String?) {
@@ -443,6 +461,12 @@ class PrincipalActivity : PantallaBase() {
 
         /** Desde esta variación porcentual el texto dice "más de 1.000 %" en lugar de la cifra exacta. */
         const val LIMITE_VARIACION = 1000.0
+
+        /** El aviso de un logro queda más tiempo que los demás para que se alcance a leer. */
+        const val DURACION_LOGRO = 5000
+
+        /** Tiempo mínimo entre dos cálculos de la racha, salvo que se haya guardado un gasto. */
+        const val ESPERA_CALCULO = 5 * 60 * 1000L
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -468,11 +492,18 @@ class PrincipalActivity : PantallaBase() {
         Anuncios.instalar(this, binding.anuncios.root, binding.navegacion.barraNavegacion) { alto -> acomodarPorAnuncios(alto) }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                Suscripcion.esPlus.collect { plus -> binding.marcaPlus.visibility = if (plus) View.VISIBLE else View.GONE }
+                Suscripcion.esPlus.collect { plus ->
+                    binding.marcaPlus.visibility = if (plus) View.VISIBLE else View.GONE
+                    // El plan decide a qué temas de campañas queda suscripto el teléfono.
+                    // Se hace fuera del hilo de la pantalla: en la primera ejecución tarda segundos.
+                    withContext(Dispatchers.Default) { Temas.sincronizar(applicationContext) }
+                }
             }
         }
         auth.currentUser?.uid?.let { uid -> lifecycleScope.launch { Suscripcion.identificar(uid) } }
         binding.btnAgregar.setOnClickListener { abrirCarga() }
+        binding.filaRacha.setOnClickListener { abrirLogros() }
+        if (savedInstanceState == null) recibirDestino(intent)
         binding.btnVerTodos.setOnClickListener { abrirHistorial() }
         binding.btnQuitarFiltro.setOnClickListener { cambiarFiltro(null) }
 
@@ -515,6 +546,10 @@ class PrincipalActivity : PantallaBase() {
                 avisarConDeshacer(borrado)
             } else {
                 avisar(datos.getInt(HojaBase.MENSAJE))
+                if (datos.getInt(HojaBase.MENSAJE) == R.string.gasto_guardado) {
+                    hiloPrincipal.postDelayed({ if (!isFinishing && !isDestroyed) calcularActividad() }, 1500)
+                    ofrecerAvisos()
+                }
             }
             // La comparación con la inflación depende de los gastos de dos períodos: se recalcula
             // cuando la escritura ya llegó al servidor.
@@ -542,7 +577,15 @@ class PrincipalActivity : PantallaBase() {
         escuchas += mediosRepo.escuchar { recibidos ->
             medios = recibidos
             refrescar()
+            atenderDestino()
         }
+        // Usar la aplicación corre hacia adelante el aviso de inactividad.
+        ejecutor.execute {
+            Avisos.programar(applicationContext)
+            Avisos.reprogramarInactividad(applicationContext)
+        }
+        // La consulta lee los gastos de dos meses: no se repite cada vez que se vuelve al resumen.
+        if (actividad == null || System.currentTimeMillis() - ultimoCalculo > ESPERA_CALCULO) calcularActividad()
         escuchas += fijosRepo.escuchar { recibidos ->
             fijos = recibidos
             crearFijosQueFaltan()
@@ -772,6 +815,109 @@ class PrincipalActivity : PantallaBase() {
         binding.tvVacioBajada.setText(
             if (recienEmpieza) R.string.chanchito_bajada else R.string.sin_periodo_bajada
         )
+    }
+
+    override fun onNewIntent(nuevo: Intent) {
+        super.onNewIntent(nuevo)
+        recibirDestino(nuevo)
+        atenderDestino()
+    }
+
+    /** Guarda a qué pantalla lleva la notificación tocada y mide que se abrió. */
+    private fun recibirDestino(origen: Intent?) {
+        val destino = origen?.getStringExtra(Avisos.DESTINO) ?: return
+        destinoPendiente = destino
+        val tipo = origen.getStringExtra(Avisos.TIPO) ?: Avisos.TIPO_CAMPANA
+        Avisos.evento(this, "notificacion_abierta", Avisos.TIPO, tipo)
+        origen.removeExtra(Avisos.DESTINO)
+    }
+
+    /** Abre la pantalla pedida por la notificación en cuanto tiene los datos que necesita. */
+    private fun atenderDestino() {
+        when (destinoPendiente) {
+            Avisos.DESTINO_REGISTRAR -> if (medios.isNotEmpty()) {
+                destinoPendiente = null
+                abrirCarga()
+            }
+            Avisos.DESTINO_LOGROS -> if (actividad != null) {
+                destinoPendiente = null
+                abrirLogros()
+            }
+            Avisos.DESTINO_PLANES -> {
+                destinoPendiente = null
+                PlanesSheet().show(supportFragmentManager, "planes")
+            }
+            Avisos.DESTINO_RESUMEN -> destinoPendiente = null
+        }
+    }
+
+    /** Racha y logros. Consulta la base, así que corre fuera del hilo de la pantalla. */
+    private fun calcularActividad() {
+        val uid = auth.currentUser?.uid ?: return
+        ultimoCalculo = System.currentTimeMillis()
+        ejecutor.execute {
+            val estado = try {
+                Actividad.calcular(applicationContext, uid, gastosRepo)
+            } catch (e: Exception) {
+                Log.w(Avisos.ETIQUETA, "racha sin datos: ${e.javaClass.simpleName}")
+                return@execute
+            }
+            hiloPrincipal.post {
+                if (isFinishing || isDestroyed) return@post
+                actividad = estado
+                mostrarRacha(estado)
+                festejar(estado.nuevos)
+                atenderDestino()
+            }
+        }
+    }
+
+    private fun mostrarRacha(estado: Actividad.Estado) {
+        val total = Retencion.Logro.values().size
+        binding.filaRacha.text = if (estado.racha > 0) {
+            getString(
+                R.string.racha_fila,
+                resources.getQuantityString(R.plurals.racha_dias, estado.racha, estado.racha),
+                estado.obtenidos.size, total
+            )
+        } else {
+            getString(R.string.racha_empezar)
+        }
+        binding.filaRacha.visibility = View.VISIBLE
+    }
+
+    /** Aviso dentro de la aplicación cuando se obtiene un logro nuevo. */
+    private fun festejar(nuevos: List<String>) {
+        val logro = nuevos.lastOrNull()?.let { Retencion.Logro.porClave(it) } ?: return
+        nuevos.forEach { Avisos.evento(this, "logro_obtenido", "logro", it) }
+        Snackbar.make(binding.root, getString(R.string.logro_nuevo, getString(LogrosSheet.titulo(logro))), Snackbar.LENGTH_LONG)
+            .setDuration(DURACION_LOGRO)
+            .setAnchorView(binding.btnAgregar)
+            .setAction(R.string.ver) { abrirLogros() }
+            .setActionTextColor(ContextCompat.getColor(this, R.color.verde_claro))
+            .show()
+    }
+
+    private fun abrirLogros() {
+        val estado = actividad ?: return
+        LogrosSheet.nueva(estado).show(supportFragmentManager, "logros")
+    }
+
+    /**
+     * Después de un gasto, que es cuando el recordatorio tiene sentido, explica para qué
+     * sirven los avisos y recién entonces pide el permiso del sistema. Se ofrece una sola vez.
+     */
+    private fun ofrecerAvisos() {
+        if (android.os.Build.VERSION.SDK_INT < 33 || Avisos.permitidas(this) || Avisos.permisoYaPedido(this)) return
+        Avisos.marcarPermisoPedido(this)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.permiso_titulo)
+            .setMessage(R.string.permiso_texto)
+            .setPositiveButton(R.string.permiso_activar) { _, _ -> pedirPermiso.launch(Manifest.permission.POST_NOTIFICATIONS) }
+            .setNegativeButton(R.string.permiso_ahora_no) { _, _ ->
+                Avisos.evento(this, "permiso_notificaciones", "resultado", "pospuesto")
+            }
+            .show()
     }
 
     private fun abrirCarga() {

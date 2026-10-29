@@ -36,6 +36,11 @@ class CategoriasRepositorio {
         }
     }
 
+    /** Nombre de cada categoría por su identificador. Bloquea; llamar desde un hilo de fondo. */
+    fun nombres(): Map<String, String> =
+        com.google.android.gms.tasks.Tasks.await(coleccion().get(), 10, java.util.concurrent.TimeUnit.SECONDS)
+            .associate { it.id to it.getString("nombre").orEmpty() }
+
     fun escuchar(alCambiar: (List<Categoria>) -> Unit): ListenerRegistration =
         coleccion().addSnapshotListener { documentos, error ->
             if (error != null || documentos == null) return@addSnapshotListener

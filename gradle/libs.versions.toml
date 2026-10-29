@@ -13,6 +13,7 @@ googleid = "1.1.1"
 recyclerview = "1.3.2"
 playServicesAds = "24.0.0"
 revenuecat = "9.29.1"
+work = "2.9.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,6 +29,10 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+
+# Tareas programadas: recordatorios y resumen semanal aunque la aplicación esté cerrada.
+androidx-work = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 
 # Monetización: anuncios y compras dentro de la app.
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }

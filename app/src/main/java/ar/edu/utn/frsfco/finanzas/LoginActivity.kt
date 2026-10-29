@@ -44,6 +44,12 @@ class LoginActivity : PantallaBase() {
         binding.btnAgregarCuenta.setOnClickListener { abrirAltaDeCuenta() }
     }
 
+    override fun onNewIntent(nuevo: Intent) {
+        super.onNewIntent(nuevo)
+        // Con singleTask, una notificación tocada llega acá; se conserva para pasar el destino.
+        setIntent(nuevo)
+    }
+
     override fun onStart() {
         super.onStart()
         // Firebase guarda la sesión, así que sólo se pide la cuenta la primera vez.
@@ -127,7 +133,12 @@ class LoginActivity : PantallaBase() {
     }
 
     private fun irAlResumen() {
-        startActivity(Intent(this, PrincipalActivity::class.java))
+        // Si se entró tocando una notificación, el destino viaja hasta el resumen.
+        // Si el resumen ya estaba abierto, lo reutiliza y le entrega el destino como pedido nuevo.
+        startActivity(Intent(this, PrincipalActivity::class.java).apply {
+            intent.extras?.let { putExtras(it) }
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        })
         finish()
     }
 

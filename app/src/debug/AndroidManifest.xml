@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Solo en la versión de depuración: permite disparar los avisos programados desde adb. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver
+            android:name=".PruebaAvisos"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="ar.edu.utn.frsfco.finanzas.PROBAR_AVISO" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

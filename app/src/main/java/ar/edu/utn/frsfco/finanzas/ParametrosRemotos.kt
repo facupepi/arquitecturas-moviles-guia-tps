@@ -21,6 +21,8 @@ object ParametrosRemotos {
     private const val CLAVE_PLAN_DESTACADO = "plan_destacado"
     private const val CLAVE_OFERTA = "oferta_plus"
     private const val CLAVE_ESCANEOS = "escaneos_gratis"
+    private const val CLAVE_HORA_RECORDATORIO = "recordatorio_hora"
+    private const val CLAVE_DIAS_INACTIVIDAD = "dias_inactividad"
     private const val LOTE_POR_DEFECTO = 30L
     private const val LOTE_MINIMO = 10
     private const val LOTE_MAXIMO = 100
@@ -44,7 +46,9 @@ object ParametrosRemotos {
                 CLAVE_MOSTRAR_BANNER to true,
                 CLAVE_PLAN_DESTACADO to "mensual",
                 CLAVE_OFERTA to Acceso.VARIANTE_TRES_ESCALONES,
-                CLAVE_ESCANEOS to Acceso.ESCANEOS_GRATIS_POR_DEFECTO.toLong()
+                CLAVE_ESCANEOS to Acceso.ESCANEOS_GRATIS_POR_DEFECTO.toLong(),
+                CLAVE_HORA_RECORDATORIO to 21L,
+                CLAVE_DIAS_INACTIVIDAD to 7L
             )
         )
         remoto.fetchAndActivate().addOnCompleteListener { _mostrarBanner.value = remoto.getBoolean(CLAVE_MOSTRAR_BANNER) }
@@ -62,4 +66,10 @@ object ParametrosRemotos {
 
     /** Escaneos de ticket por mes sin suscripción. */
     fun escaneosGratis(): Int = remoto.getLong(CLAVE_ESCANEOS).toInt().coerceIn(0, 50)
+
+    /** Hora del recordatorio diario para quien todavía no eligió la suya. */
+    fun horaRecordatorio(): Int = remoto.getLong(CLAVE_HORA_RECORDATORIO).toInt().coerceIn(0, 23)
+
+    /** Días sin abrir la aplicación antes de enviar el aviso de inactividad. */
+    fun diasInactividad(): Int = remoto.getLong(CLAVE_DIAS_INACTIVIDAD).toInt().coerceIn(2, 30)
 }
