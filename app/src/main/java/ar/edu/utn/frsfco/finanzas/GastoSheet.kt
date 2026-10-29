@@ -1,15 +1,20 @@
 package ar.edu.utn.frsfco.finanzas
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import ar.edu.utn.frsfco.finanzas.databinding.HojaGastoBinding
+import java.io.File
 import java.util.Date
 
 /**
@@ -32,6 +37,19 @@ class GastoSheet : HojaBase() {
     private var medioId: String? = null
     private var fecha: Date = Date()
 
+    // Lectura de tickets (TP7). La cámara deja la foto en este archivo; si el sistema rehace la
+    // hoja mientras la cámara está abierta, la ruta se recupera del estado guardado.
+    private var fotoTicket: File? = null
+
+    private val sacarFoto = registerForActivityResult(ActivityResultContracts.TakePicture()) { hecha ->
+        val archivo = fotoTicket
+        if (hecha && archivo != null) leerTicket(Uri.fromFile(archivo))
+    }
+
+    private val elegirImagen = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) leerTicket(uri)
+    }
+
     companion object {
         /** Nombre del canal por el que la hoja avisa qué hizo. */
         const val PEDIDO = "gasto"
@@ -46,6 +64,7 @@ class GastoSheet : HojaBase() {
         private const val ESTADO_ELEGIDA = "elegida"
         private const val ESTADO_MEDIO = "medio"
         private const val ESTADO_FECHA = "fecha"
+        private const val ESTADO_FOTO = "foto"
 
         fun nuevo(categorias: List<Categoria>, medios: List<Medio>) =
             crear(null, categorias, medios)
@@ -89,6 +108,7 @@ class GastoSheet : HojaBase() {
             else -> medios.firstOrNull()?.id
         }
         fecha = guardado(estado, ESTADO_FECHA, Date::class.java) ?: gasto?.fecha ?: Date()
+        fotoTicket = estado?.getString(ESTADO_FOTO)?.let { File(it) }
     }
 
     override fun onCreateView(inflador: LayoutInflater, contenedor: ViewGroup?, estado: Bundle?): View {
@@ -107,6 +127,9 @@ class GastoSheet : HojaBase() {
 
         binding.btnFecha.setOnClickListener { Fechas.elegir(this, fecha, ::cambiarFecha) }
         Fechas.reconectar(this, ::cambiarFecha)
+
+        binding.btnEscanear.visibility = if (gasto == null) View.VISIBLE else View.GONE
+        binding.btnEscanear.setOnClickListener { elegirOrigenDelTicket() }
 
         binding.btnGuardar.setOnClickListener { guardar() }
         binding.btnBorrar.setOnClickListener { confirmarBorrado() }
@@ -204,6 +227,49 @@ class GastoSheet : HojaBase() {
         )
     }
 
+    private fun elegirOrigenDelTicket() {
+        PopupMenu(requireContext(), binding.btnEscanear).apply {
+            menu.add(0, 1, 0, R.string.ticket_sacar_foto)
+            menu.add(0, 2, 1, R.string.ticket_elegir_imagen)
+            setOnMenuItemClickListener {
+                if (it.itemId == 1) abrirCamara() else elegirImagen.launch("image/*")
+                true
+            }
+        }.show()
+    }
+
+    private fun abrirCamara() {
+        val carpeta = File(requireContext().cacheDir, "tickets").apply { mkdirs() }
+        val archivo = File(carpeta, "ticket.jpg")
+        fotoTicket = archivo
+        val uri = FileProvider.getUriForFile(requireContext(), "${requireContext().packageName}.fotos", archivo)
+        sacarFoto.launch(uri)
+    }
+
+    /** Pasa la imagen por ML Kit y, si encuentra un importe, lo deja en el campo para que se revise. */
+    private fun leerTicket(imagen: Uri) {
+        avisar(R.string.ticket_leyendo)
+        EscanerTicket.leer(requireContext().applicationContext, imagen) { resultado ->
+            if (_binding == null) return@leer
+            val lectura = resultado.getOrNull()
+            when {
+                lectura == null -> avisar(R.string.ticket_error)
+                lectura.monto == null -> avisar(R.string.ticket_sin_importe)
+                else -> {
+                    CampoMonto.escribir(binding.etMonto, lectura.monto)
+                    if (binding.etDetalle.text.isNullOrBlank() && lectura.comercio != null) {
+                        binding.etDetalle.setText(lectura.comercio)
+                    }
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.ticket_leido, Plata.formatear(lectura.monto)),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
     private fun confirmarBorrado() {
         if (gasto == null) return
         Confirmacion.pedir(
@@ -242,6 +308,7 @@ class GastoSheet : HojaBase() {
         estado.putString(ESTADO_ELEGIDA, elegidaId)
         estado.putString(ESTADO_MEDIO, medioId)
         estado.putSerializable(ESTADO_FECHA, fecha)
+        estado.putString(ESTADO_FOTO, fotoTicket?.absolutePath)
     }
 
     override fun onDestroyView() {

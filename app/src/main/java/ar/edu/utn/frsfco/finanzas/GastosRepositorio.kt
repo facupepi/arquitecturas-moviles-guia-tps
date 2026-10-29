@@ -1,11 +1,13 @@
 package ar.edu.utn.frsfco.finanzas
 
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
 /**
  * Guarda y lee los gastos en Firestore.
@@ -117,6 +119,19 @@ class GastosRepositorio {
                 confirmadoPorServidor = !documentos.metadata.isFromCache
                 alCambiar(documentos.map { doc -> mapear(doc) })
             }
+
+    /**
+     * Suma lo gastado en [desde, hasta) con una consulta puntual por rango de fechas, que usa solo el
+     * índice automático de fecha y no agrega índices a la base. Sirve para comparar períodos (TP7).
+     * Bloquea; llamar desde un hilo de fondo.
+     */
+    fun totalEnRango(desde: Date, hasta: Date): Double {
+        val consulta = coleccion()
+            .whereGreaterThanOrEqualTo("fecha", desde)
+            .whereLessThan("fecha", hasta)
+            .get()
+        return Tasks.await(consulta, 10, TimeUnit.SECONDS).sumOf { it.getDouble("monto") ?: 0.0 }
+    }
 
     /** Escucha los gastos del intervalo [desde, hasta), sin traer períodos ajenos. */
     fun escucharEnRango(

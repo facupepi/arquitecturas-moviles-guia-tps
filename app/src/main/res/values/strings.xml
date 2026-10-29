@@ -7,16 +7,16 @@
     <string name="app_name">Mis Gastos</string>
 
     <!-- Entrada -->
-    <string name="lema">Registrá tus gastos</string>
-    <string name="bajada">Anotá cada gasto y consultá el resumen del mes por categoría.</string>
+    <string name="lema">Registre sus gastos</string>
+    <string name="bajada">Anote cada gasto y consulte el resumen del mes por categoría.</string>
     <string name="btn_entrar">Ingresar con Google</string>
     <string name="sin_cuentas">No hay ninguna cuenta de Google configurada en este dispositivo</string>
-    <string name="error_entrada">No se pudo ingresar. Intentá nuevamente.</string>
+    <string name="error_entrada">No se pudo ingresar. Intente nuevamente.</string>
     <string name="btn_agregar_cuenta">Agregar una cuenta de Google al dispositivo</string>
     <string name="btn_probar">Ingresar sin cuenta</string>
-    <string name="error_invitado">No se pudo ingresar sin cuenta. Probá con Google.</string>
-    <string name="cuenta_ya_existia">Se restauró tu cuenta anterior, con los gastos ya registrados.</string>
-    <string name="aviso_privacidad">Los datos se guardan en tu cuenta y son privados.</string>
+    <string name="error_invitado">No se pudo ingresar sin cuenta. Intente con Google.</string>
+    <string name="cuenta_ya_existia">Se restauró su cuenta anterior, con los gastos ya registrados.</string>
+    <string name="aviso_privacidad">Los datos se guardan en su cuenta y son privados.</string>
     <string name="sin_pantalla_cuentas">Este dispositivo no permite agregar cuentas desde la aplicación</string>
 
     <!-- Resumen -->
@@ -42,7 +42,7 @@
     <string name="periodo_este_anio">Este año</string>
     <string name="periodo_todo">Todo</string>
     <string name="sin_periodo_titulo">Sin movimientos</string>
-    <string name="sin_periodo_bajada">No hay gastos registrados en este período. Probá con otro.</string>
+    <string name="sin_periodo_bajada">No hay gastos registrados en este período. Intente con otro.</string>
     <string name="hoy">Hoy</string>
     <string name="ayer">Ayer</string>
 
@@ -59,28 +59,28 @@
     <string name="detalle_opcional">Detalle (opcional)</string>
     <string name="btn_guardar">Guardar</string>
     <string name="cuando_fue">Fecha del gasto</string>
-    <string name="elegi_categoria">Seleccioná una categoría</string>
+    <string name="elegi_categoria">Seleccione una categoría</string>
     <string name="medio_pago">Medio de pago</string>
     <string name="medios_pago">MEDIOS DE PAGO</string>
-    <string name="medios_ayuda">Definí con qué pagás: efectivo, débito, una billetera virtual o la tarjeta que uses.</string>
+    <string name="medios_ayuda">Defina con qué paga: efectivo, débito, una billetera virtual o la tarjeta que utilice.</string>
     <string name="agregar_medio">Agregar medio de pago</string>
-    <string name="sin_medios">Todavía no cargaste ningún medio de pago.</string>
+    <string name="sin_medios">Todavía no se cargó ningún medio de pago.</string>
     <string name="nombre_medio">Nombre, por ejemplo Billetera virtual</string>
     <string name="nuevo_medio">Nuevo medio de pago</string>
     <string name="editar_medio">Editar medio de pago</string>
     <string name="medio_guardado">Medio de pago guardado</string>
     <string name="medio_borrado">Medio de pago eliminado</string>
-    <string name="sin_medios_aviso">Antes de registrar un gasto tenés que definir al menos un medio de pago.</string>
-    <string name="monto_invalido">Ingresá un monto válido</string>
+    <string name="sin_medios_aviso">Antes de registrar un gasto, defina al menos un medio de pago.</string>
+    <string name="monto_invalido">Ingrese un monto válido</string>
     <string name="monto_maximo">El monto no puede superar $ 1.000.000.000</string>
-    <string name="error_guardar">No se pudo guardar. Verificá la conexión.</string>
+    <string name="error_guardar">No se pudo guardar. Verifique la conexión.</string>
     <string name="gasto_guardado">Gasto registrado</string>
 
     <!-- Distribución y estado vacío -->
     <string name="en_que_se_fue">Distribución por categoría</string>
     <string name="porcentaje">%1$d%%</string>
     <string name="chanchito_titulo">Todavía no hay gastos</string>
-    <string name="chanchito_bajada">Registrá el primero y vas a ver acá cómo se reparte entre las categorías.</string>
+    <string name="chanchito_bajada">Registre el primero y verá aquí cómo se reparte entre las categorías.</string>
 
     <!-- Edición y eliminación -->
     <string name="editar_gasto">Editar gasto</string>
@@ -91,11 +91,11 @@
     <string name="cancelar">Cancelar</string>
     <string name="gasto_borrado">Gasto eliminado</string>
     <string name="deshacer">Deshacer</string>
-    <string name="sin_categorias">Creá una categoría antes de registrar un gasto</string>
+    <string name="sin_categorias">Cree una categoría antes de registrar un gasto</string>
 
     <!-- Categorías -->
     <string name="categorias">Categorías</string>
-    <string name="categorias_ayuda">Seleccioná una categoría para modificar su nombre, color o ícono.</string>
+    <string name="categorias_ayuda">Seleccione una categoría para modificar su nombre, color o ícono.</string>
     <string name="nueva_categoria">Nueva categoría</string>
     <string name="editar_categoria">Editar categoría</string>
     <string name="nombre_categoria">Nombre</string>
@@ -105,7 +105,7 @@
     <string name="categoria_guardada">Categoría guardada</string>
     <string name="categoria_borrada">Categoría eliminada</string>
     <string name="borrar_categoria_aviso">Los gastos asociados van a quedar sin categoría.</string>
-    <string name="nombre_vacio">Ingresá un nombre</string>
+    <string name="nombre_vacio">Ingrese un nombre</string>
     <string name="sin_categorias_aun">Todavía no hay categorías.</string>
 
     <!-- Historial -->
@@ -126,7 +126,7 @@
     <!-- Ajustes -->
     <string name="ajustes">Ajustes</string>
     <string name="ingresos">Ingresos</string>
-    <string name="ingresos_ayuda">Registrá tu sueldo y demás ingresos para conocer el saldo disponible, no sólo lo gastado.</string>
+    <string name="ingresos_ayuda">Registre su sueldo y demás ingresos para conocer el saldo disponible, no sólo lo gastado.</string>
     <string name="ingreso">Ingreso</string>
     <string name="nuevo_ingreso">Nuevo ingreso</string>
     <string name="editar_ingreso">Editar ingreso</string>
@@ -150,7 +150,7 @@
     <string name="fijo_guardado">Gasto recurrente guardado</string>
     <string name="fijo_borrado">Gasto recurrente eliminado</string>
 
-    <string name="tus_datos">Tus datos</string>
+    <string name="tus_datos">Sus datos</string>
     <string name="exportar">Exportar movimientos</string>
     <string name="exportar_asunto">Mis gastos</string>
     <string name="sin_gastos_exportar">No hay movimientos para exportar</string>
@@ -160,15 +160,52 @@
     <string name="movimientos_depurados">Movimientos eliminados correctamente</string>
     <string name="btn_salir">Cerrar sesión</string>
     <string name="salir_aviso">Los datos quedan guardados y se restauran al volver a ingresar.</string>
-    <string name="salir_invitado_aviso">Estás usando la aplicación sin cuenta. Si cerrás la sesión, los datos registrados se pierden.</string>
+    <string name="salir_invitado_aviso">Se está usando la aplicación sin cuenta. Si cierra la sesión, los datos registrados se pierden.</string>
 
     <string name="invitado_titulo">Sesión sin cuenta</string>
-    <string name="invitado_bajada">Ingresá con Google para conservar los datos registrados y acceder a ellos desde cualquier dispositivo.</string>
-    <string name="cuenta_vinculada">Los datos quedaron asociados a tu cuenta</string>
+    <string name="invitado_bajada">Ingrese con Google para conservar los datos registrados y acceder a ellos desde cualquier dispositivo.</string>
+    <string name="cuenta_vinculada">Los datos quedaron asociados a su cuenta</string>
 
-    <string name="error_movimientos">No se pudieron cargar los movimientos. Revisá la conexión e intentá de nuevo.</string>
+    <string name="error_movimientos">No se pudieron cargar los movimientos. Revise la conexión e intente de nuevo.</string>
     <string name="borrar_ingreso_aviso">El ingreso se va a quitar del saldo. Esta acción no se puede deshacer.</string>
     <string name="borrar_fijo_aviso">Se deja de generar este gasto todos los meses. Los gastos ya registrados no se tocan.</string>
     <string name="borrar_medio_aviso">Los gastos que lo usan quedan sin medio de pago.</string>
     <string name="cargando_resumen">Cargando el resumen…</string>
+
+    <!-- Integraciones con APIs y SDKs -->
+    <string name="escanear_ticket">Escanear</string>
+    <string name="ticket_sacar_foto">Tomar una fotografía</string>
+    <string name="ticket_elegir_imagen">Elegir una imagen de la galería</string>
+    <string name="ticket_leyendo">Procesando la imagen del ticket…</string>
+    <string name="ticket_leido">Se detectó un importe de %1$s. Conviene verificarlo antes de guardar el gasto.</string>
+    <string name="ticket_sin_importe">No se detectó ningún importe en la imagen. Puede ingresarlo manualmente.</string>
+    <string name="ticket_error">No fue posible procesar la imagen. Intente nuevamente con otra fotografía.</string>
+    <string name="dolares_etiqueta">Equivalente en dólares</string>
+    <string name="dolares_valor">US$ %1$s</string>
+    <string name="dolares_detalle">Cotización de $%1$s, según %2$s.</string>
+    <string name="dolares_detalle_guardado">Cotización de $%1$s, último dato guardado, según %2$s.</string>
+    <string name="inflacion_titulo">Evolución del gasto y la inflación</string>
+    <string name="variacion_mas">%1$s&#160;%% más</string>
+    <string name="variacion_menos">%1$s&#160;%% menos</string>
+    <string name="variacion_enorme" formatted="false">Más de 1.000&#160;%</string>
+    <string name="ritmo_etiqueta">Ritmo de %1$s</string>
+    <string name="ritmo_detalle">Lleva %1$s gastados. En %2$s llevaba %3$s hasta el día %4$d.</string>
+    <string name="mes_etiqueta">%1$s frente a %2$s</string>
+    <string name="mes_detalle">Inflación de %1$s: %2$s&#160;%%.</string>
+    <string name="veredicto_disminuyo">El gasto disminuyó</string>
+    <string name="veredicto_menor">El gasto creció menos que la inflación</string>
+    <string name="veredicto_mayor">El gasto creció más que la inflación</string>
+    <string name="nota_sin_publicar">La inflación de %1$s aún no está publicada.</string>
+    <string name="nota_publicada">Inflación de %1$s: %2$s&#160;%%.</string>
+    <string name="fuente_inflacion">Fuente de la inflación: ArgentinaDatos.</string>
+    <string name="sin_comparacion_mes">Hacen falta gastos de %1$s hasta el día %2$d para medir el ritmo del mes en curso.</string>
+    <string name="sin_comparacion_mes_pasado">Hacen falta gastos de %1$s y de %2$s para ver cómo cambió el gasto.</string>
+    <string name="sin_comparacion_anio">Hacen falta gastos de %1$d hasta el %2$s para comparar con lo gastado este año.</string>
+    <string name="sin_comparacion_todo">Hacen falta gastos de al menos dos meses, con la inflación ya publicada.</string>
+    <string name="sin_comparacion_titulo">Aún no se puede comparar</string>
+    <string name="anio_etiqueta">%1$d frente a %2$d</string>
+    <string name="anio_detalle">Gasto acumulado hasta el %1$s. Inflación de los últimos 12 meses: %2$s&#160;%%.</string>
+    <string name="anio_detalle_sin_inflacion">Gasto acumulado hasta el %1$s.</string>
+    <string name="todo_etiqueta">De %1$s a %2$s</string>
+    <string name="todo_detalle">Inflación acumulada en ese período: %1$s&#160;%%.</string>
 </resources>

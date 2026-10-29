@@ -16,6 +16,8 @@
     <color name="texto_suave">#65756E</color>
     <color name="blanco">#FFFFFFFF</color>
     <color name="rojo">#C92A2A</color>
+    <color name="rojo_suave">#FDECEC</color>
+    <color name="blanco_translucido">#33FFFFFF</color>
 
     <!-- Los colores de las categorías ya no viven acá: los elige el usuario y se
          guardan en Firestore. La paleta que se le ofrece está en Iconos.colores. -->

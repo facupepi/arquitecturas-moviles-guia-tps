@@ -154,6 +154,42 @@
                             android:textColor="@color/blanco"
                             android:textSize="14sp"
                             tools:text="7 movimientos registrados" />
+                        <!-- El equivalente en dólares, con la misma estructura que las filas de ingresos y gastos. -->
+                        <LinearLayout
+                            android:id="@+id/bloqueDolares"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:alpha="0.25"
+                                android:background="@color/blanco" />
+
+                            <include
+                                android:id="@+id/filaDolares"
+                                layout="@layout/fila_desglose"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp" />
+
+                            <!-- Alineado con el texto de la fila: 18 dp del ícono y 10 dp de separación. -->
+                            <TextView
+                                android:id="@+id/tvDolaresDetalle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="28dp"
+                                android:layout_marginTop="4dp"
+                                android:alpha="0.75"
+                                android:fontFamily="@font/poppins_regular"
+                                android:textColor="@color/blanco"
+                                android:textSize="12sp"
+                                tools:text="Cotización de $1.560, según DolarAPI al 26/10/2026." />
+
+                        </LinearLayout>
 
                         <!-- El desglose. Antes iba todo en una línea separada por
                              puntos medios y costaba leerlo; ahora cada dato tiene
@@ -243,6 +279,67 @@
 
                 </LinearLayout>
 
+                                <!-- Evolución del gasto: el ritmo del mes en curso y el último mes con inflación publicada. -->
+                <LinearLayout
+                    android:id="@+id/bloqueInflacion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="26dp"
+                        android:text="@string/inflacion_titulo"
+                        android:textAppearance="@style/Texto.Seccion" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Tarjeta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="18dp">
+
+                            <include
+                                android:id="@+id/filaEvolucion"
+                                layout="@layout/fila_comparacion"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                            <TextView
+                                android:id="@+id/tvVeredicto"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:background="@drawable/fondo_etiqueta"
+                                android:fontFamily="@font/poppins_medium"
+                                android:paddingStart="12dp"
+                                android:paddingTop="6dp"
+                                android:paddingEnd="12dp"
+                                android:paddingBottom="6dp"
+                                android:textSize="12sp"
+                                tools:text="El gasto disminuyó" />
+
+                            <TextView
+                                android:id="@+id/tvNotaInflacion"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:lineSpacingExtra="2dp"
+                                android:textAppearance="@style/Texto.Apoyo"
+                                tools:text="La inflación de octubre aún no está publicada." />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
                 <!-- Título de la lista, con el filtro activo si hay uno -->
                 <LinearLayout
                     android:id="@+id/tituloLista"

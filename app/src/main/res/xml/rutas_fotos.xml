@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- La foto del ticket se guarda en el caché de la app: no queda en la galería ni hace falta permiso. -->
+<paths>
+    <cache-path name="tickets" path="tickets/" />
+</paths>

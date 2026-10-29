@@ -75,18 +75,40 @@
 
         <!-- Casi nadie anota en el momento de pagar: la mayoría carga a la noche o
              el fin de semana, así que la fecha tiene que poder corregirse. -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFecha"
-            style="@style/Boton.Blanco"
-            android:layout_width="wrap_content"
-            android:layout_height="44dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:paddingStart="14dp"
-            android:paddingEnd="16dp"
-            android:textSize="14sp"
-            app:icon="@drawable/ic_calendario"
-            app:iconSize="18dp"
-            app:iconTint="@color/texto_suave" />
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFecha"
+                style="@style/Boton.Blanco"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="16dp"
+                android:textSize="14sp"
+                app:icon="@drawable/ic_calendario"
+                app:iconSize="18dp"
+                app:iconTint="@color/texto_suave" />
+
+            <!-- Lee el importe de un ticket con ML Kit. Sólo en gastos nuevos. -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEscanear"
+                style="@style/Boton.Blanco"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginStart="10dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="16dp"
+                android:text="@string/escanear_ticket"
+                android:textSize="14sp"
+                app:icon="@drawable/ic_camara"
+                app:iconSize="18dp"
+                app:iconTint="@color/texto_suave" />
+
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"

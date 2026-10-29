@@ -82,7 +82,7 @@ class GastosAdapter(
         /** Cuándo fue, y el detalle si el usuario escribió uno. */
         private fun armarApoyo(gasto: Gasto): String {
             val cuando = cuandoFue(gasto.fecha)
-            return if (gasto.detalle.isBlank()) cuando else "$cuando · ${gasto.detalle}"
+            return if (gasto.detalle.isBlank()) cuando else "$cuando, ${gasto.detalle}"
         }
 
         /** Hoy y ayer se nombran así; el resto lleva la fecha. */
